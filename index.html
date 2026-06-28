@@ -274,8 +274,8 @@
                 </div>
             </div>
             
-            <!-- Multiplayer Turn & Score Bar -->
-            <div id="multiplayer-status-bar" class="hidden flex items-center gap-4 bg-indigo-50 p-2 rounded-xl border border-indigo-100">
+            <!-- Multiplayer Turn & Score Bar (NOW VISIBLE FOR SINGLE PLAYER TOO) -->
+            <div id="multiplayer-status-bar" class="flex items-center gap-4 bg-indigo-50 p-2 rounded-xl border border-indigo-100">
                 <div class="text-xs md:text-sm">
                     <span class="text-indigo-500 font-bold uppercase block text-[9px] leading-tight">Giliran</span>
                     <span id="active-player-name" class="font-black text-indigo-900">Pemain 1</span>
@@ -492,7 +492,7 @@
                 <div id="quiz-feedback" class="mt-6 p-4 rounded-xl hidden"></div>
 
                 <div class="flex justify-end mt-6">
-                    <button id="quiz-next-btn" disabled onclick="nextQuizStep()" class="bg-slate-350 text-slate-500 cursor-not-allowed font-bold py-3 px-8 rounded-xl transition-all shadow-sm border-2 border-slate-400">
+                    <button id="quiz-next-btn" disabled onclick="nextQuizStep()" class="bg-slate-355 text-slate-500 cursor-not-allowed font-bold py-3 px-8 rounded-xl transition-all shadow-sm border-2 border-slate-400">
                         Pertanyaan Selanjutnya <i class="fa-solid fa-arrow-right ml-2"></i>
                     </button>
                 </div>
@@ -536,6 +536,17 @@
                     <p class="text-sm text-amber-950 font-medium">
                         Perhatikan masing-masing kartu pemain di atas. Meskipun **Domain** dan **Kodomain** setiap pemain itu sama, **Range** (himpunan hijau) mereka bisa berbeda-beda tergantung pada hubungan/panah relasi yang berhasil mereka pasangkan saat gilirannya!
                     </p>
+                </div>
+
+                <!-- MATERI SUMMARY ADDED HERE -->
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl mb-6 text-left shadow-sm">
+                    <p class="text-xs text-blue-800 font-bold uppercase tracking-wider mb-2">📚 RINGKASAN MATERI RELASI</p>
+                    <ul class="text-sm text-blue-950 font-medium space-y-2">
+                        <li><strong class="text-indigo-700">Relasi:</strong> Aturan yang menghubungkan anggota suatu himpunan dengan anggota himpunan lainnya.</li>
+                        <li><strong class="text-indigo-700">Domain:</strong> Domain suatu fungsi adalah himpunan lengkap dari semua kemungkinan nilai.</li>
+                        <li><strong class="text-indigo-700">Kodomain:</strong> Kodomain adalah seluruh himpunan target yang ditetapkan sejak awal.</li>
+                        <li><strong class="text-indigo-700">Range:</strong> Range adalah himpunan nilai yang benar-benar dihasilkan oleh fungsi tersebut setelah memasukkan angka-angka dari Domain.</li>
+                    </ul>
                 </div>
 
                 <div class="flex flex-col md:flex-row gap-4">
@@ -589,7 +600,7 @@
                 </p>
                 
                 <!-- Grade Badge -->
-                <div class="inline-block bg-indigo-900 text-yellow-300 font-extrabold text-sm px-5 py-1.5 rounded-full shadow-md my-4 tracking-wide brand-font uppercase">
+                <div id="cert-grade-badge" class="inline-block bg-indigo-900 text-yellow-300 font-extrabold text-sm px-5 py-1.5 rounded-full shadow-md my-4 tracking-wide brand-font uppercase">
                      LULUS DENGAN PUJIAN (EXCELLENT)
                 </div>
 
@@ -764,6 +775,11 @@
             }
         ];
 
+        // --- 2. DATA UTILITY BILANGAN STRING ---
+        function getNumberEmoji(val) {
+            return val.toString();
+        }
+
         // --- STATE PERMAINAN ---
         let currentMode = 'kartun';
         let isMultiplayer = false;
@@ -916,6 +932,7 @@
         function generateRandomCartoonSet() {
             let shuffledPool = [...extendedCartoonPool].sort(() => Math.random() - 0.5);
             let activeShows = shuffledPool.slice(0, 5); // Tepat 5 Kodomain
+            let distractorShows = shuffledPool.slice(5, 10);
 
             let generatedDomainHand = [];
             let generatedKodomainDeck = [];
@@ -927,6 +944,9 @@
                     title: show.title,
                     color: show.color
                 });
+            });
+
+            [...activeShows, ...distractorShows].forEach(show => {
                 show.characters.forEach(char => {
                     allPossibleCharacters.push({
                         id: char.id,
@@ -937,9 +957,9 @@
                 });
             });
 
-            // TARGET: Tepat 15 kartu Domain
+            // TARGET: Tepat 24 kartu Domain
             allPossibleCharacters = allPossibleCharacters.sort(() => Math.random() - 0.5);
-            generatedDomainHand = allPossibleCharacters.slice(0, 15);
+            generatedDomainHand = allPossibleCharacters.slice(0, 24);
 
             currentVennDomainItems = [...generatedDomainHand];
             currentVennKodomainItems = [...generatedKodomainDeck];
@@ -1001,9 +1021,9 @@
                 }
             });
 
-            // Mengisi sisanya secara acak agar tepat berjumlah 15 kartu Domain
+            // Mengisi sisanya secara acak agar tepat berjumlah 24 kartu Domain
             fullDomainPool = fullDomainPool.sort(() => Math.random() - 0.5);
-            while (generatedDomainHand.length < 15 && fullDomainPool.length > 0) {
+            while (generatedDomainHand.length < 24 && fullDomainPool.length > 0) {
                 const picked = fullDomainPool.pop();
                 generatedDomainHand.push({
                     id: `dom_${idCounter++}`,
@@ -1014,7 +1034,7 @@
                 });
             }
 
-            generatedDomainHand = generatedDomainHand.slice(0, 15);
+            generatedDomainHand = generatedDomainHand.slice(0, 24);
 
             currentVennDomainItems = [...generatedDomainHand];
             currentVennKodomainItems = [...generatedKodomainDeck];
@@ -1049,7 +1069,7 @@
                 multiScoreboard.classList.remove('hidden');
                 updateMultiplayerUI();
             } else {
-                multiStatusBar.classList.add('hidden');
+                multiStatusBar.classList.remove('hidden'); // SHOW FOR SINGLEPLAYER
                 multiScoreboard.classList.add('hidden');
                 updateMultiplayerUI();
             }
@@ -1073,10 +1093,10 @@
                 }
             }
 
-            if (!isMultiplayer) return;
-            
             activePlayerName.innerText = activePlayer.name;
             activePlayerScore.innerText = `${activePlayer.score} Poin`;
+
+            if (!isMultiplayer) return;
 
             scoreboardList.innerHTML = '';
             const rankedPlayers = [...players].sort((a,b) => b.score - a.score);
@@ -1475,6 +1495,17 @@
                 }
                 
                 document.getElementById('cert-recipient-name').innerText = sorted[0].name;
+
+                // Grade dinamis berdasarkan pencapaian
+                let winnerScore = sorted[0].score;
+                let gradeBadge = document.getElementById('cert-grade-badge');
+                if (winnerScore >= 80) {
+                    gradeBadge.innerText = "LULUS DENGAN PUJIAN (EXCELLENT)";
+                } else if (winnerScore >= 40) {
+                    gradeBadge.innerText = "SANGAT BAIK (WELL DONE)";
+                } else {
+                    gradeBadge.innerText = "BAIK SEKALI (GOOD JOB)";
+                }
 
                 setTimeout(() => {
                     initQuiz();
@@ -1966,23 +1997,30 @@
             
             const feedbackBox = document.getElementById('quiz-feedback');
             feedbackBox.classList.remove('hidden');
+            const nextBtn = document.getElementById('quiz-next-btn');
             
             if (isCorrect) {
                 feedbackBox.className = "mt-6 p-4 rounded-xl bg-emerald-100 border-4 border-emerald-300 text-emerald-900 text-sm font-bold animate-pulse";
                 feedbackBox.innerHTML = `<strong>BENAR SEKALI!</strong> Pemahamanmu luar biasa presisi. Silakan klik tombol di bawah untuk lanjut!`;
-                quizScore++;
+                
+                nextBtn.disabled = false;
+                nextBtn.className = "bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 px-8 rounded-xl transition-all shadow-md cursor-pointer flex items-center border-2 border-indigo-400";
+                if (quizCurrentStep === 5) {
+                    nextBtn.innerHTML = `Lihat Rangkuman Hasil <i class="fa-solid fa-graduation-cap ml-2"></i>`;
+                } else {
+                    nextBtn.innerHTML = `Pertanyaan Selanjutnya <i class="fa-solid fa-arrow-right ml-2"></i>`;
+                }
             } else {
                 feedbackBox.className = "mt-6 p-4 rounded-xl bg-rose-100 border-4 border-rose-350 text-rose-950 text-sm font-bold";
                 feedbackBox.innerHTML = `<strong>KURANG TEPAT.</strong> Tapi tidak apa-apa, ayo coba pahami lagi konsep dari petunjuk di atas dan pilih jawaban yang benar!`;
-            }
-
-            const nextBtn = document.getElementById('quiz-next-btn');
-            nextBtn.disabled = false;
-            nextBtn.className = "bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 px-8 rounded-xl transition-all shadow-md cursor-pointer flex items-center border-2 border-indigo-400";
-            if (quizCurrentStep === 5) {
-                nextBtn.innerHTML = `Lihat Rangkuman Hasil <i class="fa-solid fa-graduation-cap ml-2"></i>`;
-            } else {
-                nextBtn.innerHTML = `Pertanyaan Selanjutnya <i class="fa-solid fa-arrow-right ml-2"></i>`;
+                
+                nextBtn.disabled = true;
+                nextBtn.className = "bg-slate-355 text-slate-500 cursor-not-allowed font-bold py-3 px-8 rounded-xl transition-all shadow-sm border-2 border-slate-400";
+                if (quizCurrentStep === 5) {
+                    nextBtn.innerHTML = `Lihat Rangkuman Hasil <i class="fa-solid fa-graduation-cap ml-2"></i>`;
+                } else {
+                    nextBtn.innerHTML = `Pertanyaan Selanjutnya <i class="fa-solid fa-arrow-right ml-2"></i>`;
+                }
             }
         }
 
