@@ -1,1 +1,2104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REMACA Solitaire - Media Pembelajaran Relasi</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Great+Vibes&family=Cinzel:wght@600;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #fce7f3 0%, #dcfce7 50%, #e0f2fe 100%);
+        }
+        .brand-font {
+            font-family: 'Comfortaa', cursive;
+        }
+        .certificate-title {
+            font-family: 'Cinzel', serif;
+        }
+        .certificate-script {
+            font-family: 'Great Vibes', cursive;
+        }
+        
+        .playing-card {
+            width: 100px;
+            height: 140px;
+            border-radius: 16px;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            box-shadow: 0 8px 16px -2px rgba(99, 102, 241, 0.25), 0 4px 8px -3px rgba(99, 102, 241, 0.18);
+        }
+        .playing-card:hover {
+            transform: translateY(-10px) scale(1.06);
+            box-shadow: 0 16px 24px -3px rgba(99, 102, 241, 0.4), 0 8px 16px -2px rgba(99, 102, 241, 0.25);
+            border-color: #4f46e5;
+        }
+        .playing-card:active {
+            transform: scale(0.93);
+        }
+        
+        /* Mini stack styling */
+        .mini-card {
+            width: 75px;
+            height: 100px;
+            font-size: 11px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            animation: popIn 0.3s ease-out;
+            border: 2px solid #e2e8f0;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4px;
+        }
+        
+        /* Animations */
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 40%, 60%, 80% { transform: translateX(-6px); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(6px); }
+        }
+        .anim-shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        /* Custom scrollbar for game board */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #fbcfe8;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #a5b4fc;
+            border-radius: 9999px;
+            border: 2px solid #fbcfe8;
+        }
+        
+        /* Scrollable Modal Overlay preventing top cropping on any screen size */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: flex-start;
+            justify-content: center;
+            z-index: 100;
+            padding: 2.5rem 1rem;
+            overflow-y: auto;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: #fff;
+            border-radius: 28px;
+            padding: 2.5rem;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            margin: auto; /* Vertically center in start-aligned flex when height allows */
+        }
 
+        /* SVG styles for Venn Diagram (Vibrant, Colorful & High Contrast) */
+        .venn-ellipse {
+            fill-opacity: 0.22;
+            stroke-width: 5;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.08));
+        }
+        .venn-arrow {
+            fill: none;
+            stroke-width: 3.5;
+            marker-end: url(#arrowhead);
+            transition: all 0.5s ease;
+        }
+        
+        /* Certificate Print Layout Configuration */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #print-certificate-area, #print-certificate-area * {
+                visibility: visible;
+            }
+            #print-certificate-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: auto;
+                box-shadow: none;
+                border: none;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen font-sans select-none">
+    
+    <!-- FIRST PAGE: Welcome Screen (REVISI: Tema Warna Pastel Cerah Menarik Selaras dengan Lobi) -->
+    <div id="welcome-page" class="flex-grow flex flex-col items-center justify-center w-full max-w-5xl mx-auto p-6 text-center animate-[popIn_0.5s_ease-out]">
+        <div class="bg-gradient-to-br from-amber-100 via-orange-100 to-yellow-100 p-10 md:p-16 rounded-[2.5rem] shadow-2xl max-w-3xl w-full border-[8px] border-amber-300 relative overflow-hidden flex flex-col items-center">
+            <!-- Background Elements -->
+            <div class="absolute -right-16 -bottom-16 w-60 h-60 bg-white/20 rounded-full blur-2xl"></div>
+            <div class="absolute -left-16 -top-16 w-48 h-48 bg-white/20 rounded-full blur-xl"></div>
+            
+            <span class="bg-amber-200/80 border border-amber-300 text-amber-900 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-widest brand-font">Interactive Math Media</span>
+            <h1 class="text-4xl md:text-6xl font-extrabold mt-6 mb-4 brand-font tracking-tight leading-tight text-indigo-950">
+                Selamat Datang Di <br><span class="text-pink-600">REMACA GAME</span>
+            </h1>
+            <p class="text-indigo-900/80 text-base md:text-lg mb-10 max-w-xl leading-relaxed font-semibold">
+                Platform inovatif berbasis permainan kartu Solitaire untuk memahami konsep relasi matematika: 
+                <strong>Domain</strong> (Daerah Asal), <strong>Kodomain</strong> (Daerah Kawan), dan <strong>Range</strong> (Daerah Hasil) secara asyik dan visual!
+            </p>
+
+            <button onclick="goToLobby()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xl py-4 px-12 rounded-full shadow-lg hover:shadow-indigo-500/20 transition-all transform hover:scale-105 active:scale-95 flex items-center gap-3 cursor-pointer brand-font animate-pulse">
+                <span>READY</span>
+                <i class="fa-solid fa-gamepad"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- SECOND PAGE: Landing / Lobby Page (Hidden initially) -->
+    <div id="home-page" class="hidden flex-grow flex flex-col items-center justify-center w-full max-w-5xl mx-auto p-6 text-center animate-[popIn_0.4s_ease-out]">
+        <div class="bg-amber-100 p-8 md:p-12 rounded-3xl shadow-xl border-4 border-amber-400 max-w-3xl w-full mb-8">
+            <span class="bg-amber-300 text-amber-950 text-sm font-bold px-4 py-1.5 rounded-full brand-font">KONFIGURASI LOBI GAME</span>
+            <h1 class="text-3xl md:text-5xl font-extrabold text-indigo-950 mt-4 mb-2 brand-font tracking-tight">Pilih Mode Permainan</h1>
+            <p class="text-xs md:text-sm text-slate-505 mb-6 font-semibold">Atur nama pemain, jumlah anggota, dan pilih materi relasi pembelajaran</p>
+            
+            <!-- Konfigurasi Mode Pemain (Vibrant Pastel) -->
+            <div class="bg-blue-200 border-4 border-blue-400 p-5 rounded-2xl mb-8 max-w-xl mx-auto text-left shadow-md">
+                <h3 class="font-bold text-blue-950 mb-3 flex items-center gap-2 text-sm md:text-base brand-font">
+                    <i class="fa-solid fa-users text-blue-700"></i> Atur Mode Pemain:
+                </h3>
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <button id="btn-singleplayer" onclick="setPlayerMode('single')" class="py-2.5 px-4 rounded-xl border-2 border-indigo-700 bg-indigo-600 text-white font-extrabold text-sm transition-all shadow-md">
+                        <i class="fa-solid fa-user mr-1"></i> Pemain Tunggal
+                    </button>
+                    <button id="btn-multiplayer" onclick="setPlayerMode('multi')" class="py-2.5 px-4 rounded-xl border-2 border-indigo-200 bg-white hover:border-indigo-400 text-indigo-950 font-extrabold text-sm transition-all shadow-sm">
+                        <i class="fa-solid fa-people-group mr-1"></i> Bergiliran
+                    </button>
+                </div>
+
+                <!-- Pemilih Jumlah Pemain Multiplayer Instan -->
+                <div id="player-count-container" class="space-y-3 hidden mb-5 border-t border-blue-300 pt-4">
+                    <label class="block text-xs font-extrabold text-blue-900 uppercase tracking-wider">Pilih Jumlah Pemain:</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button id="btn-count-2" onclick="setMultiplayerCount(2)" class="py-2.5 px-3 rounded-xl border-2 border-indigo-600 bg-indigo-600 text-white font-extrabold text-xs transition-all shadow-md">2 Pemain</button>
+                        <button id="btn-count-3" onclick="setMultiplayerCount(3)" class="py-2.5 px-3 rounded-xl border-2 border-indigo-250 bg-indigo-100 text-indigo-950 font-extrabold text-xs transition-all hover:border-indigo-400">3 Pemain</button>
+                        <button id="btn-count-4" onclick="setMultiplayerCount(4)" class="py-2.5 px-3 rounded-xl border-2 border-indigo-250 bg-indigo-100 text-indigo-950 font-extrabold text-xs transition-all hover:border-indigo-400">4 Pemain</button>
+                    </div>
+                </div>
+
+                <!-- Input Nama Pemain -->
+                <div id="player-names-container" class="space-y-3 border-t border-blue-300 pt-4">
+                    <label class="block text-xs font-extrabold text-blue-900 uppercase tracking-wider">Masukkan Nama Pemain:</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="player-inputs">
+                        <!-- Input Default untuk Pemain Tunggal -->
+                        <input type="text" id="p-input-0" class="p-2.5 border-2 border-indigo-300 rounded-xl text-sm font-extrabold focus:outline-none focus:border-indigo-600 w-full placeholder-slate-400 text-indigo-950 bg-white" placeholder="Ketik nama kamu disini">
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-slate-700 text-sm md:text-md mb-8 max-w-xl mx-auto font-bold">
+                Hubungkan anggota domain dan kodomain dengan tepat, perhatikan bagaimana **Diagram Venn** terbentuk secara langsung untuk giliranmu, lalu lalui kuis evaluasinya!
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full text-left">
+                <!-- Mode 1: Kartun (Warna Pastel Ungu Pekat) -->
+                <button onclick="startGame('kartun')" class="bg-purple-350/90 p-6 rounded-2xl border-4 border-purple-500 hover:border-purple-700 hover:shadow-xl transition-all flex flex-col gap-4 group text-left shadow-md">
+                    <div class="flex items-center justify-between w-full">
+                        <span class="text-2xl font-black group-hover:scale-110 transition-transform text-purple-800">KARTUN</span>
+                        <span class="text-xs font-extrabold bg-purple-700 text-white px-2.5 py-1 rounded-full">Konsep Dasar</span>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-black text-purple-950 brand-font">Himpunan Kartun</h2>
+                        <p class="text-purple-900 text-sm mt-1 font-semibold">Relasi: "Karakter dari kartun/film"<br>Domain: Karakter, Kodomain: Judul Film.</p>
+                    </div>
+                </button>
+                
+                <!-- Mode 2: Bilangan (Warna Pastel Mint Pekat) -->
+                <button onclick="startGame('bilangan')" class="bg-emerald-350/90 p-6 rounded-2xl border-4 border-emerald-500 hover:border-emerald-700 hover:shadow-xl transition-all flex flex-col gap-4 group text-left shadow-md">
+                    <div class="flex items-center justify-between w-full">
+                        <span class="text-2xl font-black group-hover:scale-110 transition-transform text-emerald-800">ANGKA</span>
+                        <span class="text-xs font-extrabold bg-emerald-700 text-white px-2.5 py-1 rounded-full">Bilangan Matematika</span>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-black text-emerald-950 brand-font">Himpunan Bilangan</h2>
+                        <p class="text-emerald-900 text-sm mt-1 font-semibold">Relasi: "Kelipatan dari" & "Habis dibagi"<br>Domain: Bil. 1-50, Kodomain: Angka 2-12.</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+        
+        <p class="text-xs text-slate-400 font-bold">Diberdayakan oleh Universitas Sebelas Maret UNS</p>
+    </div>
+
+    <!-- Header (Tampil saat permainan dimulai) -->
+    <header id="game-header" class="bg-white/90 backdrop-blur-md shadow-md border-b-2 border-indigo-200 sticky top-0 z-50" style="display: none;">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <button onclick="confirmGoHome()" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-800 w-11 h-11 rounded-xl font-black transition-colors flex items-center justify-center shadow" title="Kembali ke Lobi">
+                    <i class="fa-solid fa-home text-lg"></i>
+                </button>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black text-indigo-950 leading-tight brand-font">REMACA Solitaire</h1>
+                    <p id="game-mission" class="text-xs md:text-sm font-extrabold text-indigo-600/80">Misi: Cocokkan relasi kartu dengan teliti!</p>
+                </div>
+            </div>
+            
+            <!-- Multiplayer Turn & Score Bar -->
+            <div id="multiplayer-status-bar" class="hidden flex items-center gap-4 bg-indigo-50 p-2 rounded-xl border border-indigo-100">
+                <div class="text-xs md:text-sm">
+                    <span class="text-indigo-500 font-bold uppercase block text-[9px] leading-tight">Giliran</span>
+                    <span id="active-player-name" class="font-black text-indigo-900">Pemain 1</span>
+                </div>
+                <div class="h-6 w-[2px] bg-indigo-300"></div>
+                <div class="text-xs md:text-sm text-right">
+                    <span class="text-slate-500 font-extrabold uppercase block text-[9px] leading-tight">Skor</span>
+                    <span id="active-player-score" class="font-black text-emerald-700">0 Poin</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="bg-indigo-50 px-3 py-1.5 rounded-lg border-2 border-indigo-200 flex items-center gap-2 text-xs md:text-sm">
+                    <i class="fa-solid fa-layer-group text-indigo-500"></i>
+                    <span class="font-bold text-indigo-900">Sisa Domain: <span id="cards-left">0</span></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Game Board Area -->
+    <main id="game-main" class="flex-grow max-w-7xl mx-auto w-full p-4 md:p-6 flex flex-col gap-6" style="display: none;">
+        
+        <!-- Board Grid Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+            
+            <!-- Left Panel: DECK (Tumpukan Kodomain) -->
+            <div class="bg-pink-100 border-4 border-pink-300 p-5 rounded-2xl shadow-md flex flex-col items-center gap-4 text-center lg:col-span-1">
+                <h3 class="font-black text-pink-950 text-sm w-full border-b-2 border-pink-300 pb-2 mb-1">
+                    <i class="fa-solid fa-box-archive text-pink-600 mr-2"></i>TUMPUKAN TARGET
+                </h3>
+                
+                <!-- Deck visual container -->
+                <div class="relative w-36 h-48 flex items-center justify-center">
+                    <div id="deck-pile" onclick="drawNextKodomain()" class="absolute w-32 h-44 bg-gradient-to-br from-indigo-500 to-purple-600 border-4 border-white rounded-2xl shadow-xl cursor-pointer flex flex-col items-center justify-center text-white font-bold transition-transform hover:-translate-y-2 active:translate-y-0 select-none z-10">
+                        <div class="text-2xl font-black mb-2 animate-bounce">TARGET</div>
+                        <div class="text-xs tracking-wider uppercase font-black">Buka Kartu</div>
+                        <div id="deck-count" class="text-lg bg-indigo-900/40 px-2.5 py-0.5 rounded-full mt-2 text-indigo-100 text-xs">Sisa: 6</div>
+                    </div>
+                    <div class="absolute w-32 h-44 bg-indigo-400/80 border-2 border-white/50 rounded-2xl shadow-md translate-x-1.5 translate-y-1.5 z-0"></div>
+                    <div class="absolute w-32 h-44 bg-indigo-500/60 border-2 border-white/30 rounded-2xl shadow-sm translate-x-3 translate-y-3 -z-10"></div>
+                </div>
+                
+                <p class="text-xs text-pink-900 leading-relaxed font-extrabold">
+                    Klik tumpukan kartu di atas untuk membuka target <strong>Kodomain</strong>.
+                </p>
+
+                <!-- Papan Skor Tambahan (Multiplayer) -->
+                <div id="multiplayer-scoreboard" class="hidden w-full border-t-2 border-pink-300 pt-4 mt-2 text-left">
+                    <h4 class="font-black text-pink-950 text-xs uppercase mb-2 text-center">Klasemen Sementara</h4>
+                    <div id="scoreboard-list" class="space-y-1.5 text-xs"></div>
+                </div>
+            </div>
+
+            <!-- Middle Panel: WORKSPACE & LIVE VENN DIAGRAM -->
+            <div class="lg:col-span-2 flex flex-col gap-4">
+                
+                <!-- Workspace Container (Warna Pastel Kuning-Ungu Pekat & Menarik) -->
+                <div class="bg-gradient-to-b from-amber-100 to-pink-100 p-6 rounded-2xl border-4 border-amber-300 shadow-lg flex flex-col items-center">
+                    <div class="flex items-center justify-between w-full mb-4">
+                        <span class="text-xs font-black text-amber-950 uppercase tracking-wider"><i class="fa-solid fa-gamepad mr-1"></i> Area Pemasangan Aktif</span>
+                        <!-- Area Pemasangan Aktif kini menampilkan status giliran pemain yang interaktif -->
+                        <span id="active-status" class="text-xs font-black bg-indigo-600 text-white px-3 py-1.5 rounded-full border border-indigo-500 shadow animate-pulse">Menunggu Kartu</span>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-center gap-6 w-full py-4 min-h-[220px]">
+                        
+                        <!-- 1. Active Relation Card (Aturan Relasi) -->
+                        <div class="flex flex-col items-center gap-1">
+                            <span class="text-[10px] font-black text-indigo-900 uppercase tracking-widest">Relasi</span>
+                            <div id="active-relation-card" class="w-32 h-44 bg-blue-100 border-4 border-blue-400 rounded-2xl shadow-md flex flex-col items-center justify-center p-3 text-center">
+                                <span class="text-2xl font-black mb-2 text-blue-900">RELASI</span>
+                                <p class="text-xs font-black text-blue-950" id="relation-text">Belum ada aturan aktif</p>
+                            </div>
+                        </div>
+
+                        <!-- Icon Arrow representing mapping direction -->
+                        <div class="hidden md:flex flex-col items-center justify-center text-indigo-400">
+                            <span class="text-xs font-bold text-indigo-600 brand-font mb-1 font-semibold text-center">Memetakan<br>Ke</span>
+                            <i class="fa-solid fa-arrow-right text-3xl animate-pulse"></i>
+                        </div>
+
+                        <!-- 2. Active Target Card -->
+                        <div class="flex flex-col items-center gap-1">
+                            <span class="text-[10px] font-black text-indigo-900 uppercase tracking-widest">Kodomain</span>
+                            <div id="active-kodomain-card" class="w-32 h-44 bg-rose-100 border-4 border-rose-400 rounded-2xl shadow-md flex flex-col items-center justify-center p-3 text-center transition-all duration-300">
+                                <span class="text-4xl font-black mb-2 text-rose-300">?</span>
+                                <p class="text-sm font-extrabold text-rose-950" id="kodomain-text">Buka Target</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- 3. Stacking Area (Himpunan Pasangan Berurutan) -->
+                    <div class="w-full border-t-2 border-dashed border-amber-300 pt-4 mt-2 flex flex-col items-center">
+                        <p class="text-xs font-black text-emerald-900 mb-3 uppercase tracking-wider">
+                            <i class="fa-solid fa-square-check text-emerald-600 mr-1.5"></i> Pasangan Terpilih (Domain)
+                        </p>
+                        
+                        <!-- Drop Zone -->
+                        <div id="active-stack" class="w-full min-h-[110px] rounded-xl border-4 border-dashed border-emerald-300 bg-emerald-100/40 flex flex-wrap gap-2.5 p-3 items-center justify-center transition-all duration-300">
+                            <span class="text-xs text-emerald-950 font-bold text-center pointer-events-none" id="stack-placeholder">
+                                Klik langsung kartu Domain di bawah untuk memasukannya secara otomatis!
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Action buttons (Selesai Giliran & Konfirmasi) -->
+                    <div class="flex gap-4 w-full mt-5">
+                        <button id="pass-turn-btn" onclick="passTurn()" disabled class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-extrabold py-3 px-6 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed disabled:shadow-none border-2 border-amber-400">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>Selesai Giliran</span>
+                        </button>
+                        <button id="next-round-btn" onclick="archiveCurrentRound()" disabled class="flex-1 bg-slate-300 text-slate-500 cursor-not-allowed font-black py-3 px-6 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 border-2 border-slate-400">
+                            <span>Konfirmasi & Lanjut</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: HISTORI & LIVE DIAGRAM VENN (Disesuaikan Per Pemain) -->
+            <div class="flex flex-col gap-6 lg:col-span-1">
+                <!-- Live Diagram Venn Panel -->
+                <div class="bg-indigo-100 border-4 border-indigo-300 p-5 rounded-2xl shadow-md flex flex-col h-[340px]">
+                    <h3 class="font-black text-indigo-950 text-xs border-b-2 border-indigo-200 pb-2 mb-3 text-center uppercase tracking-wide">
+                        <i class="fa-solid fa-circle-nodes text-indigo-600 mr-2"></i>Diagram Venn: <span id="venn-player-label" class="text-indigo-700 font-black">Pemain 1</span>
+                    </h3>
+                    <div class="flex-grow flex items-center justify-center relative overflow-hidden" id="live-venn-container"></div>
+                </div>
+
+                <!-- Histori Arsip Pasangan -->
+                <div class="bg-teal-100 border-4 border-teal-300 p-5 rounded-2xl shadow-md flex flex-col h-[220px]">
+                    <h3 class="font-black text-teal-950 text-sm border-b-2 border-teal-200 pb-2 mb-3 text-center">
+                        <i class="fa-solid fa-list-check text-teal-600 mr-2"></i>ARSIP PASANGAN
+                    </h3>
+                    <div id="archive-list" class="flex-grow overflow-y-auto space-y-3 pr-1 text-xs text-slate-500 flex flex-col justify-start">
+                        <div class="text-center my-auto p-4 text-teal-950 font-bold">
+                            <i class="fa-solid fa-folder-open text-4xl text-teal-500 mb-2 font-light"></i>
+                            <p>Belum ada relasi yang terarsip.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Bottom Section: PLAYER HAND -->
+        <section class="bg-purple-100 border-4 border-purple-300 p-6 rounded-2xl shadow-lg mt-2">
+            <h2 class="text-md font-black text-purple-950 mb-4 brand-font flex items-center gap-2">
+                <span class="flex h-3 w-3 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                </span>
+                Area Domain (Klik kartu untuk memasangkan secara otomatis)
+            </h2>
+            
+            <div id="domain-container" class="flex flex-wrap justify-center gap-3.5 p-4 bg-purple-200/50 rounded-2xl min-h-[170px] border-2 border-purple-300"></div>
+        </section>
+    </main>
+
+    <!-- Feedback Modal -->
+    <div id="msg-modal" class="modal-overlay">
+        <div class="modal-content !bg-rose-100 border-4 border-rose-400 shadow-2xl">
+            <div id="modal-icon" class="text-4xl font-black mb-4 text-rose-600">INFO</div>
+            <h2 id="modal-title" class="text-3xl font-black mb-2 brand-font text-rose-700">Belum Tepat</h2>
+            <p id="modal-body" class="text-rose-950 mb-6 font-extrabold text-lg leading-relaxed"></p>
+            <button id="modal-btn" class="bg-rose-500 hover:bg-rose-600 text-white font-black py-3 px-10 rounded-full shadow-lg transition-transform hover:scale-105">Coba Lagi</button>
+        </div>
+    </div>
+
+    <!-- Interactive Learning Quiz Modal -->
+    <div id="learning-modal" class="modal-overlay overflow-y-auto py-10">
+        <div class="modal-content !max-w-6xl !w-full bg-indigo-100 border-4 border-indigo-300 relative text-left shadow-2xl">
+            <div class="absolute top-0 left-0 w-full h-3 bg-indigo-600 rounded-t-2xl"></div>
+            
+            <div id="quiz-intro-screen" class="p-4 text-center">
+                <span class="text-4xl font-black animate-bounce inline-block text-indigo-600 mb-4">SELESAI</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold mb-4 brand-font text-indigo-950 mt-4">Permainan Selesai!</h2>
+                <div id="multiplayer-winner-declaration" class="hidden mb-6 bg-emerald-100 border-4 border-emerald-300 rounded-2xl p-4 text-center">
+                    <h3 class="font-black text-2xl text-emerald-900 brand-font">SKOR AKHIR</h3>
+                    <p class="text-lg text-emerald-800 font-black mt-1" id="winner-name-text">Pemain 1 memimpin dengan skor tertinggi!</p>
+                </div>
+                <p class="text-lg text-indigo-950 font-bold mb-8 leading-relaxed">
+                    Setiap pemain telah menyelesaikan seluruh tumpukan target! Luar biasa!<br>
+                    Namun, petualangan belajarmu belum usai. Mari kita selesaikan kuis interaktif berikut untuk menyimpulkan pelajaran hari ini!
+                </p>
+                <button onclick="startQuiz()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 px-10 rounded-full shadow-lg transition-transform hover:scale-105 text-lg brand-font">
+                    Mulai Kuis Analisis >
+                </button>
+            </div>
+
+            <!-- Quiz Stage Container -->
+            <div id="quiz-stage-screen" class="hidden p-2">
+                <div class="w-full bg-slate-200/80 rounded-full h-3 mb-6">
+                    <div id="quiz-progress" class="bg-indigo-600 h-3 rounded-full transition-all duration-300" style="width: 16%"></div>
+                </div>
+                
+                <span id="quiz-badge" class="bg-indigo-200 text-indigo-900 text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider brand-font">Pertanyaan 1 dari 6</span>
+                <h3 id="quiz-question" class="text-2xl font-black text-indigo-950 mt-3 mb-6">Pertanyaan di sini...</h3>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                    <div id="quiz-options" class="space-y-4"></div>
+                    
+                    <!-- Interactive Visual Aid for Quiz (Venn Diagram) -->
+                    <div class="bg-white border-4 border-indigo-200 p-4 rounded-2xl shadow-inner">
+                        <h4 class="font-black text-slate-800 text-xs uppercase mb-2 text-center brand-font">
+                            Visualisasi Pendukung (Diagram Venn)
+                        </h4>
+                        <div id="quiz-venn-container" class="h-[280px] w-full flex items-center justify-center"></div>
+                    </div>
+                </div>
+                
+                <div id="quiz-feedback" class="mt-6 p-4 rounded-xl hidden"></div>
+
+                <div class="flex justify-end mt-6">
+                    <button id="quiz-next-btn" disabled onclick="nextQuizStep()" class="bg-slate-350 text-slate-500 cursor-not-allowed font-bold py-3 px-8 rounded-xl transition-all shadow-sm border-2 border-slate-400">
+                        Pertanyaan Selanjutnya <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quiz Result / Summary Screen -->
+            <div id="quiz-summary-screen" class="hidden p-4">
+                <div class="text-center mb-6">
+                    <span class="text-4xl font-black animate-bounce inline-block text-indigo-600 mb-4">RANGKUMAN</span>
+                    <h2 class="text-3xl font-extrabold text-indigo-900 mt-4 brand-font">Perbandingan Hasil Belajar</h2>
+                    <p class="text-slate-600 mt-2">Bandingkan Diagram Venn dari masing-masing pemain di bawah ini untuk melihat perbedaan Range!</p>
+                </div>
+
+                <!-- Pembandingan Diagram Venn Individu -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-6" id="summary-players-grid"></div>
+
+                <div class="space-y-4 border-t border-b border-slate-200 py-6 my-6">
+                    <h3 class="font-bold text-indigo-950 brand-font text-lg mb-2"><i class="fa-solid fa-diagram-project text-indigo-500 mr-2"></i>Himpunan Gabungan Hasil Permainan:</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-indigo-50/50 p-4 rounded-xl border-2 border-indigo-200">
+                            <h4 class="font-bold text-indigo-800 text-sm mb-1">DOMAIN (DAERAH ASAL)</h4>
+                            <p class="text-xs text-slate-500 mb-2">Himpunan semua anggota awal di kartu pegangan:</p>
+                            <p id="summary-domain-list" class="font-mono text-xs bg-white p-2 rounded border font-bold text-indigo-950 break-words"></p>
+                        </div>
+                        <div class="bg-rose-50/50 p-4 rounded-xl border-2 border-rose-200">
+                            <h4 class="font-bold text-rose-800 text-sm mb-1">KODOMAIN (DAERAH KAWAN)</h4>
+                            <p class="text-xs text-slate-500 mb-2">Himpunan semua anggota sasaran target di tumpukan target (termasuk yang tidak terisi):</p>
+                            <p id="summary-kodomain-list" class="font-mono text-xs bg-white p-2 rounded border font-bold text-rose-150 break-words"></p>
+                        </div>
+                        <div class="bg-emerald-50/50 p-4 rounded-xl border-2 border-emerald-200">
+                            <h4 class="font-bold text-emerald-800 text-sm mb-1">RANGE UTAMA</h4>
+                            <p class="text-xs text-slate-500 mb-2">Himpunan semua anggota daerah kawan yang **benar-benar memiliki pasangan**:</p>
+                            <p id="summary-range-list" class="font-mono text-xs bg-white p-2 rounded border font-bold text-emerald-150 break-words"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-amber-100 border-l-4 border-amber-500 p-4 rounded-r-xl mb-6">
+                    <p class="text-xs text-amber-800 font-semibold uppercase tracking-wider mb-1">CATATAN PENTING PEMBELAJARAN</p>
+                    <p class="text-sm text-amber-950 font-medium">
+                        Perhatikan masing-masing kartu pemain di atas. Meskipun **Domain** dan **Kodomain** setiap pemain itu sama, **Range** (himpunan hijau) mereka bisa berbeda-beda tergantung pada hubungan/panah relasi yang berhasil mereka pasangkan saat gilirannya!
+                    </p>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-4">
+                    <button onclick="openCertificateModal()" class="bg-yellow-300 hover:bg-yellow-400 text-indigo-950 font-black py-4 px-8 rounded-xl shadow-lg transition-all flex-1 text-center flex items-center justify-center gap-2 brand-font">
+                        <i class="fa-solid fa-award text-lg animate-pulse"></i>
+                        <span>Klaim Sertifikat Juara</span>
+                    </button>
+                    <button onclick="closeLearningModal(); goHome();" class="bg-slate-200 hover:bg-slate-355 text-slate-800 font-bold py-4 px-8 rounded-xl transition-all shadow-sm flex-1 text-center">
+                        Ke Beranda
+                    </button>
+                    <button onclick="closeLearningModal(); resetGame();" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-xl shadow-md transition-all flex-1 text-center">
+                        Main Lagi (Mode Ini)
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- CERTIFICATE MODAL VIEW -->
+    <div id="certificate-modal" class="modal-overlay">
+        <div class="max-w-4xl w-full bg-white rounded-3xl p-6 md:p-8 shadow-2xl relative flex flex-col items-center my-auto min-h-max border-4 border-yellow-500">
+            
+            <!-- Close Button -->
+            <button onclick="closeCertificateModal()" class="absolute top-4 right-4 bg-slate-100 hover:bg-slate-200 text-slate-700 w-10 h-10 rounded-full font-bold transition-colors flex items-center justify-center no-print z-50">
+                <i class="fa-solid fa-times"></i>
+            </button>
+
+            <!-- Certificate Printable Layout Area -->
+            <div id="print-certificate-area" class="w-full bg-amber-50/50 border-[16px] border-double border-yellow-700/60 p-8 md:p-12 pt-12 md:pt-14 text-center rounded-2xl relative overflow-hidden shadow-inner my-2">
+                <!-- Background Decor -->
+                <div class="absolute -right-16 -top-16 w-40 h-40 border-4 border-yellow-700/10 rounded-full"></div>
+                <div class="absolute -left-16 -bottom-16 w-40 h-40 border-4 border-yellow-700/10 rounded-full"></div>
+                <div class="absolute inset-0 border-2 border-yellow-700/20 m-2 pointer-events-none"></div>
+
+                <!-- Ribbon/Header -->
+                <div class="text-yellow-700 text-4xl mb-3 leading-none"><i class="fa-solid fa-award"></i></div>
+                <h1 class="certificate-title text-2xl md:text-4xl font-extrabold text-yellow-900 tracking-wider">SERTIFIKAT PENGHARGAAN</h1>
+                <p class="text-[10px] uppercase tracking-[0.25em] font-bold text-yellow-700/80 mt-1">Diberikan Sebagai Apresiasi Atas Prestasi Belajar</p>
+                
+                <div class="w-24 h-[2px] bg-yellow-700/30 mx-auto my-4"></div>
+
+                <p class="text-slate-500 italic text-sm">Sertifikat ini secara resmi diberikan dengan bangga kepada:</p>
+                <h2 id="cert-recipient-name" class="certificate-script text-4xl md:text-5xl text-indigo-900 font-bold my-3 py-1 border-b-2 border-dashed border-indigo-200 max-w-xl mx-auto">Pemain 1</h2>
+
+                <p class="text-slate-600 max-w-2xl mx-auto leading-relaxed text-xs md:text-sm px-4">
+                    Telah berhasil menyelesaikan misi permainan matematika dan tantangan kuis analisis relasi 
+                    <span class="font-bold text-indigo-950">REMACA (Relation Match Card) Solitaire</span>. 
+                    Dinyatakan telah menguasai kompetensi dasar matematika kurikulum Merdeka mengenai identifikasi 
+                    <span class="font-bold text-indigo-950">Domain, Kodomain, dan Range</span> dengan predikat:
+                </p>
+                
+                <!-- Grade Badge -->
+                <div class="inline-block bg-indigo-900 text-yellow-300 font-extrabold text-sm px-5 py-1.5 rounded-full shadow-md my-4 tracking-wide brand-font uppercase">
+                     LULUS DENGAN PUJIAN (EXCELLENT)
+                </div>
+
+                <div class="grid grid-cols-2 gap-6 mt-4 max-w-2xl mx-auto text-[11px] md:text-xs pt-3 border-t border-yellow-700/10">
+                    <div>
+                        <p class="text-slate-400">Dosen Pengampu Mapel Matematika</p>
+                        <div class="h-10 flex items-end justify-center">
+                            <span class="font-semibold text-slate-800 border-b border-slate-300 pb-0.5 italic">Dr. Farida Nurhasanah S.Pd., M.Pd.</span>
+                        </div>
+                        <p class="text-[9px] text-slate-400 mt-0.5">NIP. 198205162006042001</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400">Tim Pengembang REMACA</p>
+                        <div class="h-10 flex items-end justify-center">
+                            <span class="font-semibold text-slate-800 border-b border-slate-300 pb-0.5 italic">Kelompok 6 (Kelas B) UNS</span>
+                        </div>
+                        <p class="text-[9px] text-slate-400 mt-0.5">Edisi Juni 2026</p>
+                    </div>
+                </div>
+
+                <!-- Golden Stamp Seal -->
+                <div class="absolute bottom-4 right-4 opacity-20 md:opacity-80">
+                    <svg width="70" height="70" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="#b45309" stroke-width="2" stroke-dasharray="3 2" />
+                        <circle cx="50" cy="50" r="40" fill="#f59e0b" fill-opacity="0.2" stroke="#b45309" stroke-width="1.5" />
+                        <path d="M 50 15 L 60 40 L 85 40 L 65 55 L 75 80 L 50 65 L 25 80 L 35 55 L 15 40 L 40 40 Z" fill="#d97706" />
+                        <text x="50" y="53" text-anchor="middle" fill="#78350f" font-size="8" font-weight="bold" font-family="'Cinzel', serif">REMACA</text>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex gap-4 mt-4 w-full no-print">
+                <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-6 rounded-xl flex-1 flex items-center justify-center gap-2 shadow-md">
+                    <i class="fa-solid fa-print"></i>
+                    <span>Cetak / Simpan PDF</span>
+                </button>
+                <button onclick="closeCertificateModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-3.5 px-6 rounded-xl flex-1">
+                    Kembali
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Dialog Custom Modal -->
+    <div id="confirm-modal" class="modal-overlay">
+        <div class="modal-content !bg-yellow-50 border-4 border-yellow-300 text-center">
+            <div class="text-4xl font-black mb-4 text-yellow-700">KELUAR</div>
+            <h2 class="text-2xl font-bold mb-2 brand-font text-yellow-950">Kembali ke Lobi?</h2>
+            <p class="text-slate-600 mb-6 font-medium text-sm">Kemajuan permainanmu saat ini akan hilang. Apakah kamu yakin ingin keluar?</p>
+            <div class="flex gap-4">
+                <button onclick="closeConfirmModal()" class="flex-1 bg-white hover:bg-slate-100 text-slate-800 font-bold py-2.5 rounded-xl transition-all border border-slate-200 shadow-sm">Batal</button>
+                <button onclick="forceGoHome()" class="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-2.5 rounded-xl transition-all shadow-md">Ya, Keluar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- POOL DATA MATERI GAME ---
+        
+        // --- 1. DATA KHUSUS MODE KARTUN ---
+        const extendedCartoonPool = [
+            {
+                id: 'spongebob',
+                title: 'SpongeBob',
+                color: '#fef08a', 
+                characters: [
+                    { id: 'sb1', name: 'SpongeBob', icon: 'SB' },
+                    { id: 'sb2', name: 'Patrick', icon: 'PT' },
+                    { id: 'sb3', name: 'Squidward', icon: 'SQ' },
+                    { id: 'sb4', name: 'Mr. Krabs', icon: 'MK' }
+                ]
+            },
+            {
+                id: 'doraemon',
+                title: 'Doraemon',
+                color: '#bae6fd', 
+                characters: [
+                    { id: 'dr1', name: 'Doraemon', icon: 'DR' },
+                    { id: 'dr2', name: 'Nobita', icon: 'NB' },
+                    { id: 'dr3', name: 'Shizuka', icon: 'SZ' },
+                    { id: 'dr4', name: 'Giant', icon: 'GT' }
+                ]
+            },
+            {
+                id: 'naruto',
+                title: 'Naruto',
+                color: '#fed7aa', 
+                characters: [
+                    { id: 'nr1', name: 'Naruto', icon: 'NR' },
+                    { id: 'nr2', name: 'Sasuke', icon: 'SS' },
+                    { id: 'nr3', name: 'Sakura', icon: 'SK' },
+                    { id: 'nr4', name: 'Kakashi', icon: 'KK' }
+                ]
+            },
+            {
+                id: 'upinipin',
+                title: 'Upin & Ipin',
+                color: '#bbf7d0', 
+                characters: [
+                    { id: 'ui1', name: 'Upin', icon: 'UP' },
+                    { id: 'ui2', name: 'Ipin', icon: 'IP' },
+                    { id: 'ui3', name: 'Kak Ros', icon: 'KR' },
+                    { id: 'ui4', name: 'Tok Dalang', icon: 'TD' }
+                ]
+            },
+            {
+                id: 'onepiece',
+                title: 'One Piece',
+                color: '#e9d5ff', 
+                characters: [
+                    { id: 'op1', name: 'Luffy', icon: 'LF' },
+                    { id: 'op2', name: 'Zoro', icon: 'ZR' },
+                    { id: 'op3', name: 'Nami', icon: 'NM' },
+                    { id: 'op4', name: 'Sanji', icon: 'SJ' }
+                ]
+            },
+            {
+                id: 'avatar',
+                title: 'Avatar Aang',
+                color: '#fca5a5', 
+                characters: [
+                    { id: 'av1', name: 'Aang', icon: 'AN' },
+                    { id: 'av2', name: 'Katara', icon: 'KT' },
+                    { id: 'av3', name: 'Sokka', icon: 'SK' },
+                    { id: 'av4', name: 'Zuko', icon: 'ZK' }
+                ]
+            },
+            {
+                id: 'dragonball',
+                title: 'Dragon Ball',
+                color: '#ffe4e6', 
+                characters: [
+                    { id: 'db1', name: 'Goku', icon: 'GK' },
+                    { id: 'db2', name: 'Vegeta', icon: 'VG' },
+                    { id: 'db3', name: 'Gohan', icon: 'GH' },
+                    { id: 'db4', name: 'Piccolo', icon: 'PC' }
+                ]
+            },
+            {
+                id: 'conan',
+                title: 'Detektif Conan',
+                color: '#fbcfe8', 
+                characters: [
+                    { id: 'cn1', name: 'Conan', icon: 'CN' },
+                    { id: 'cn2', name: 'Ran Mouri', icon: 'RN' },
+                    { id: 'cn3', name: 'Shinichi', icon: 'SN' },
+                    { id: 'cn4', name: 'Kogoro', icon: 'KG' }
+                ]
+            },
+            {
+                id: 'toystory',
+                title: 'Toy Story',
+                color: '#fed7aa', 
+                characters: [
+                    { id: 'ts1', name: 'Woody', icon: 'WD' },
+                    { id: 'ts2', name: 'Buzz Lightyear', icon: 'BZ' },
+                    { id: 'ts3', name: 'Jessie', icon: 'JS' },
+                    { id: 'ts4', name: 'Rex', icon: 'RX' }
+                ]
+            },
+            {
+                id: 'shinchan',
+                title: 'Shin-chan',
+                color: '#bbf7d0', 
+                characters: [
+                    { id: 'sc1', name: 'Shin-chan', icon: 'SC' },
+                    { id: 'sc2', name: 'Himawari', icon: 'HW' },
+                    { id: 'sc3', name: 'Shiro', icon: 'SR' },
+                    { id: 'sc4', name: 'Misae', icon: 'MS' }
+                ]
+            }
+        ];
+
+        // --- STATE PERMAINAN ---
+        let currentMode = 'kartun';
+        let isMultiplayer = false;
+        let selectedMultiplayerCount = 2;
+        
+        // Multiplayer / Pemain State
+        let players = [];            
+        let currentPlayerIdx = 0;    
+
+        let domainHand = [];         
+        let kodomainDeck = [];       
+        let activeKodomain = null;   
+        let activeRelationsMatched = []; 
+        let archivedRounds = [];     
+        let selectedCard = null;     
+        let totalInitialDomain = 0;
+
+        // Visual SVG Ellipse Data untuk Diagram Venn Sempurna
+        let currentVennDomainItems = [];
+        let currentVennKodomainItems = [];
+
+        // --- KUIS EVALUASI STATE ---
+        let quizCurrentStep = 0;
+        let quizScore = 0;
+        let selectedQuizOptionIndex = null;
+        let quizQuestionsData = [];
+
+        // --- ELEMEN DOM ---
+        const domainContainer = document.getElementById('domain-container');
+        const activeKodomainCard = document.getElementById('active-kodomain-card');
+        const activeRelationCard = document.getElementById('active-relation-card');
+        const activeStack = document.getElementById('active-stack');
+        const stackPlaceholder = document.getElementById('stack-placeholder');
+        const nextRoundBtn = document.getElementById('next-round-btn');
+        const passTurnBtn = document.getElementById('pass-turn-btn');
+        const deckCount = document.getElementById('deck-count');
+        const deckPile = document.getElementById('deck-pile');
+        const archiveList = document.getElementById('archive-list');
+        const cardsLeftDisplay = document.getElementById('cards-left');
+        const activeStatus = document.getElementById('active-status');
+        const vennPlayerLabel = document.getElementById('venn-player-label');
+
+        // Multiplayer UI elements
+        const multiStatusBar = document.getElementById('multiplayer-status-bar');
+        const activePlayerName = document.getElementById('active-player-name');
+        const activePlayerScore = document.getElementById('active-player-score');
+        const multiScoreboard = document.getElementById('multiplayer-scoreboard');
+        const scoreboardList = document.getElementById('scoreboard-list');
+
+        // Modals
+        const msgModal = document.getElementById('msg-modal');
+        const modalIcon = document.getElementById('modal-icon');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+        const modalBtn = document.getElementById('modal-btn');
+        const learningModal = document.getElementById('learning-modal');
+        const confirmModal = document.getElementById('confirm-modal');
+        const certificateModal = document.getElementById('certificate-modal');
+
+
+        // --- LOGIKA UTILITY NAVIGASI SCREEN ---
+
+        function goToLobby() {
+            document.getElementById('welcome-page').classList.add('hidden');
+            document.getElementById('home-page').classList.remove('hidden');
+            renderPlayerInputs();
+        }
+
+        // Render Field Input Nama dengan placeholder abu-abu lembut
+        function renderPlayerInputs() {
+            const container = document.getElementById('player-inputs');
+            container.innerHTML = '';
+
+            if (!isMultiplayer) {
+                // Satu input untuk Pemain Tunggal
+                container.innerHTML = `
+                    <input type="text" id="p-input-0" class="p-2.5 border-2 border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:border-indigo-500 w-full placeholder-slate-400 text-indigo-900 bg-indigo-50/50 font-bold" placeholder="Ketik nama kamu disini">
+                `;
+            } else {
+                // Multiplayer (Sesuai dengan jumlah tombol terpilih: 2, 3, atau 4)
+                for (let i = 0; i < selectedMultiplayerCount; i++) {
+                    container.innerHTML += `
+                        <input type="text" id="p-input-${i}" class="p-2.5 border-2 border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:border-indigo-500 placeholder-slate-400 text-indigo-900 bg-indigo-50/50 font-bold" placeholder="Ketik nama kamu disini">
+                    `;
+                }
+            }
+        }
+
+        function setPlayerMode(mode) {
+            const btnSingle = document.getElementById('btn-singleplayer');
+            const btnMulti = document.getElementById('btn-multiplayer');
+            const pCountContainer = document.getElementById('player-count-container');
+
+            if (mode === 'single') {
+                isMultiplayer = false;
+                btnSingle.className = "py-2.5 px-4 rounded-xl border-2 border-indigo-700 bg-indigo-600 text-white font-extrabold text-sm transition-all shadow-md";
+                btnMulti.className = "py-2.5 px-4 rounded-xl border-2 border-slate-200 bg-white hover:border-indigo-300 text-slate-700 font-bold text-sm transition-all shadow-sm";
+                pCountContainer.classList.add('hidden');
+            } else {
+                isMultiplayer = true;
+                btnSingle.className = "py-2.5 px-4 rounded-xl border-2 border-slate-200 bg-white hover:border-indigo-300 text-slate-700 font-bold text-sm transition-all shadow-sm";
+                btnMulti.className = "py-2.5 px-4 rounded-xl border-2 border-indigo-600 bg-indigo-600 text-white font-extrabold text-sm transition-all shadow-md";
+                pCountContainer.classList.remove('hidden');
+            }
+
+            renderPlayerInputs();
+        }
+
+        function setMultiplayerCount(count) {
+            selectedMultiplayerCount = count;
+            
+            for (let i = 2; i <= 4; i++) {
+                const btn = document.getElementById(`btn-count-${i}`);
+                if (i === count) {
+                    btn.className = "py-2 px-3 rounded-lg border-2 border-indigo-500 bg-indigo-500 text-white font-extrabold text-xs transition-all";
+                } else {
+                    btn.className = "py-2 px-3 rounded-lg border-2 border-slate-200 bg-white text-slate-700 font-bold text-xs transition-all hover:border-indigo-300";
+                }
+            }
+
+            renderPlayerInputs();
+        }
+
+        // Ambil nama pemain asli
+        function getRegisteredPlayers() {
+            const inputs = document.getElementById('player-inputs').querySelectorAll('input');
+            const playerList = [];
+            inputs.forEach((input, index) => {
+                let nameValue = input.value.trim();
+                if (!nameValue) {
+                    nameValue = isMultiplayer ? `Pemain ${index + 1}` : "Petualang REMACA";
+                }
+                playerList.push({
+                    id: index,
+                    name: nameValue,
+                    score: 0,
+                    matches: [],
+                    hasTakenTurnThisRound: false,
+                    hand: [], 
+                    currentRoundMatches: [], 
+                    startingDomain: [] 
+                });
+            });
+            return playerList;
+        }
+
+
+        // --- KOLEKSI GENERATOR MATERI ACAK ---
+
+        function generateRandomCartoonSet() {
+            let shuffledPool = [...extendedCartoonPool].sort(() => Math.random() - 0.5);
+            let activeShows = shuffledPool.slice(0, 5); // Tepat 5 Kodomain
+
+            let generatedDomainHand = [];
+            let generatedKodomainDeck = [];
+            let allPossibleCharacters = [];
+
+            activeShows.forEach(show => {
+                generatedKodomainDeck.push({
+                    id: show.id,
+                    title: show.title,
+                    color: show.color
+                });
+                show.characters.forEach(char => {
+                    allPossibleCharacters.push({
+                        id: char.id,
+                        name: char.name,
+                        icon: char.icon,
+                        showId: show.id
+                    });
+                });
+            });
+
+            // TARGET: Tepat 15 kartu Domain
+            allPossibleCharacters = allPossibleCharacters.sort(() => Math.random() - 0.5);
+            generatedDomainHand = allPossibleCharacters.slice(0, 15);
+
+            currentVennDomainItems = [...generatedDomainHand];
+            currentVennKodomainItems = [...generatedKodomainDeck];
+
+            return {
+                domain: generatedDomainHand.sort(() => Math.random() - 0.5),
+                kodomain: generatedKodomainDeck.sort(() => Math.random() - 0.5)
+            };
+        }
+
+        // Disesuaikan secara spesifik untuk Domain 1-50 dgn format kombinasi, Kodomain 2-12
+        function generateRandomMathSet() {
+            const colors = ['#fdf2f8', '#ecfdf5', '#f0f9ff', '#fefce8', '#fff7ed', '#faf5ff', '#fff1f2', '#f1f5f9'];
+            let shuffledColors = [...colors].sort(() => Math.random() - 0.5);
+
+            // TARGET: Tepat 5 kartu Kodomain (Dari List 2, 3, 4, 5, 6, 7, 8, 9, 10, 12)
+            const possibleKodomains = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12];
+            const activeKodomains = possibleKodomains.sort(() => Math.random() - 0.5).slice(0, 5);
+
+            let generatedDomainHand = [];
+            let generatedKodomainDeck = [];
+            let idCounter = 1;
+
+            activeKodomains.forEach((val, idx) => {
+                const ruleType = idx % 2 === 0 ? 'habis_dibagi' : 'kelipatan_dari';
+                const ruleLabel = ruleType === 'habis_dibagi' ? 'Habis Dibagi Oleh' : 'Kelipatan Dari';
+                generatedKodomainDeck.push({
+                    id: `k_math_${val}`,
+                    title: `${val}`,
+                    val: val,
+                    color: shuffledColors.pop() || '#f0f9ff',
+                    rule: ruleType,
+                    ruleLabel: ruleLabel
+                });
+            });
+
+            // Membuat Pool 150 kombinasi Domain sesuai instruksi 1, 2/2, 3/3 dsb.
+            let fullDomainPool = [];
+            for (let i = 1; i <= 50; i++) {
+                fullDomainPool.push({ name: `${i}`, val: i });
+                fullDomainPool.push({ name: `${i*2}/2`, val: i });
+                fullDomainPool.push({ name: `${i*3}/3`, val: i });
+            }
+
+            // Memastikan setidaknya ada 1 jawaban valid untuk setiap kodomain yang aktif
+            activeKodomains.forEach(kVal => {
+                const validPool = fullDomainPool.filter(d => d.val % kVal === 0);
+                if (validPool.length > 0) {
+                    const picked = validPool[Math.floor(Math.random() * validPool.length)];
+                    // Hapus dari pool agar tidak ganda
+                    fullDomainPool = fullDomainPool.filter(d => d.name !== picked.name);
+                    generatedDomainHand.push({
+                        id: `dom_${idCounter++}`,
+                        name: picked.name,
+                        val: picked.val,
+                        icon: picked.name, 
+                        showId: `k_math_${kVal}`
+                    });
+                }
+            });
+
+            // Mengisi sisanya secara acak agar tepat berjumlah 15 kartu Domain
+            fullDomainPool = fullDomainPool.sort(() => Math.random() - 0.5);
+            while (generatedDomainHand.length < 15 && fullDomainPool.length > 0) {
+                const picked = fullDomainPool.pop();
+                generatedDomainHand.push({
+                    id: `dom_${idCounter++}`,
+                    name: picked.name,
+                    val: picked.val,
+                    icon: picked.name,
+                    showId: 'unmapped'
+                });
+            }
+
+            generatedDomainHand = generatedDomainHand.slice(0, 15);
+
+            currentVennDomainItems = [...generatedDomainHand];
+            currentVennKodomainItems = [...generatedKodomainDeck];
+
+            return {
+                domain: generatedDomainHand.sort(() => Math.random() - 0.5),
+                kodomain: generatedKodomainDeck.sort(() => Math.random() - 0.5)
+            };
+        }
+
+
+        // --- LOGIKA UTAMA PERMAINAN ---
+
+        function startGame(mode) {
+            currentMode = mode;
+            players = getRegisteredPlayers();
+            currentPlayerIdx = 0;
+
+            document.getElementById('home-page').style.display = 'none';
+            document.getElementById('game-header').style.display = 'block';
+            document.getElementById('game-main').style.display = 'flex';
+            
+            const missionEl = document.getElementById('game-mission');
+            if (mode === 'kartun') {
+                missionEl.innerText = "Misi: Klik Karakter (Domain) untuk dicocokkan dengan Kartun yang tepat (Kodomain)!";
+            } else {
+                missionEl.innerText = "Misi: Klik bilangan Domain yang cocok dengan Relasi & Kodomain aktif!";
+            }
+
+            if (isMultiplayer) {
+                multiStatusBar.classList.remove('hidden');
+                multiScoreboard.classList.remove('hidden');
+                updateMultiplayerUI();
+            } else {
+                multiStatusBar.classList.add('hidden');
+                multiScoreboard.classList.add('hidden');
+                updateMultiplayerUI();
+            }
+
+            initGame();
+        }
+
+        function updateMultiplayerUI() {
+            const activePlayer = players[currentPlayerIdx];
+            vennPlayerLabel.innerText = activePlayer.name;
+
+            // Perbarui label giliran di area workspace tengah secara interaktif
+            const activeStatusEl = document.getElementById('active-status');
+            if (activeStatusEl) {
+                if (isMultiplayer) {
+                    activeStatusEl.innerText = `Giliran: ${activePlayer.name} - Pilih Kartumu!`;
+                    activeStatusEl.className = "text-xs font-black bg-indigo-600 text-white px-3.5 py-1.5 rounded-full border-2 border-indigo-400 shadow animate-pulse";
+                } else {
+                    activeStatusEl.innerText = "Sesi Pencocokan Aktif";
+                    activeStatusEl.className = "text-xs font-black bg-emerald-600 text-white px-3 py-1.5 rounded-full shadow";
+                }
+            }
+
+            if (!isMultiplayer) return;
+            
+            activePlayerName.innerText = activePlayer.name;
+            activePlayerScore.innerText = `${activePlayer.score} Poin`;
+
+            scoreboardList.innerHTML = '';
+            const rankedPlayers = [...players].sort((a,b) => b.score - a.score);
+            rankedPlayers.forEach((p, idx) => {
+                const isCurrent = (p.id === activePlayer.id);
+                scoreboardList.innerHTML += `
+                    <div class="flex justify-between items-center p-1.5 rounded ${isCurrent ? 'bg-indigo-150 font-bold text-indigo-950' : 'text-slate-600'} font-semibold">
+                        <span>${idx+1}. ${p.name}</span>
+                        <span class="${isCurrent ? 'text-indigo-700' : 'text-slate-500'} font-bold">${p.score} Pts</span>
+                    </div>
+                `;
+            });
+        }
+
+        function initGame() {
+            selectedCard = null;
+            activeKodomain = null;
+            activeRelationsMatched = [];
+            archivedRounds = [];
+            
+            let gameSet = (currentMode === 'kartun') ? generateRandomCartoonSet() : generateRandomMathSet();
+            let allDomainCards = gameSet.domain;
+            kodomainDeck = gameSet.kodomain;
+            totalInitialDomain = allDomainCards.length;
+
+            players.forEach(p => {
+                p.matches = [];
+                p.hand = [];
+                p.currentRoundMatches = []; 
+                p.hasTakenTurnThisRound = false;
+                p.startingDomain = []; 
+            });
+
+            allDomainCards.forEach((card, idx) => {
+                const targetPlayerIdx = idx % players.length;
+                players[targetPlayerIdx].hand.push(card);
+                players[targetPlayerIdx].startingDomain.push(card); 
+            });
+
+            domainHand = players[currentPlayerIdx].hand;
+
+            updateDeckUI();
+            resetWorkspaceUI();
+            renderDomainHand();
+            
+            archiveList.innerHTML = `
+                <div class="text-center my-auto p-4 text-teal-700 font-semibold">
+                    <i class="fa-solid fa-folder-open text-4xl text-teal-300 mb-2 font-light"></i>
+                    <p>Belum ada relasi yang terarsip.</p>
+                </div>
+            `;
+
+            updateSisaDomainCounter();
+            updateMultiplayerUI();
+            drawLiveVenn();
+        }
+
+        function updateSisaDomainCounter() {
+            cardsLeftDisplay.innerText = players[currentPlayerIdx].hand.length;
+        }
+
+        function renderDomainHand() {
+            domainContainer.innerHTML = '';
+            
+            if (players[currentPlayerIdx].hand.length === 0) {
+                domainContainer.innerHTML = `
+                    <div class="text-center py-8 w-full animate-pulse">
+                        <i class="fa-solid fa-circle-check text-5xl text-emerald-500 mb-2 animate-bounce"></i>
+                        <p class="text-sm font-extrabold text-slate-700">Kartu di tanganmu sudah habis!</p>
+                        <p class="text-xs text-slate-400">Silakan klik "Selesai Giliran" agar permainan pemain lain dapat berlanjut.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const pastelBgPool = [
+                'bg-rose-200 border-rose-400 text-rose-950', 
+                'bg-blue-200 border-blue-400 text-blue-950', 
+                'bg-emerald-200 border-emerald-400 text-emerald-950', 
+                'bg-purple-200 border-purple-400 text-purple-950', 
+                'bg-amber-200 border-amber-400 text-amber-950', 
+                'bg-orange-200 border-orange-400 text-orange-950'
+            ];
+
+            players[currentPlayerIdx].hand.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.id = `card-${item.id}`;
+                const pastelBgClass = pastelBgPool[index % pastelBgPool.length];
+                card.className = `playing-card ${pastelBgClass} border-4 text-slate-800 flex flex-col items-center justify-center p-3 text-center transition-all duration-300`;
+                card.dataset.id = item.id;
+                
+                card.innerHTML = `
+                    <div class="text-3xl font-black mb-2 pointer-events-none">${item.icon}</div>
+                    <div class="text-sm font-extrabold leading-tight pointer-events-none">${item.name}</div>
+                    <div class="absolute top-2 left-2 text-[10px] font-black brand-font pointer-events-none">A</div>
+                `;
+
+                card.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    attemptMatch(item.id);
+                });
+
+                domainContainer.appendChild(card);
+            });
+        }
+
+        function updateDeckUI() {
+            deckCount.innerText = `Sisa: ${kodomainDeck.length}`;
+            if (kodomainDeck.length === 0) {
+                deckPile.classList.add('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
+                deckPile.innerHTML = `
+                    <div class="text-xl font-black mb-1">HABIS</div>
+                    <div class="text-[10px]">Tumpukan</div>
+                `;
+            } else {
+                deckPile.classList.remove('opacity-40', 'cursor-not-allowed', 'pointer-events-none');
+                deckPile.innerHTML = `
+                    <div class="text-2xl font-black mb-2 animate-bounce">TARGET</div>
+                    <div class="text-xs tracking-wider uppercase font-black">Buka Kartu</div>
+                    <div id="deck-count" class="text-lg bg-indigo-900/40 px-2.5 py-0.5 rounded-full mt-2 text-indigo-100 text-xs">Sisa: ${kodomainDeck.length}</div>
+                `;
+            }
+        }
+
+        function resetWorkspaceUI() {
+            activeKodomainCard.style.backgroundColor = '#ffffff';
+            activeKodomainCard.style.borderColor = '#e2e8f0';
+            activeKodomainCard.innerHTML = `
+                <span class="text-4xl font-black mb-2 text-rose-300">?</span>
+                <p class="text-xs font-bold text-slate-400" id="kodomain-text">Klik Buka Kartu</p>
+            `;
+            
+            activeRelationCard.innerHTML = `
+                <span class="text-2xl font-black mb-2 text-blue-900">RELASI</span>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Aturan</p>
+                <p class="text-xs font-bold text-slate-400 mt-1" id="relation-text">Belum aktif</p>
+            `;
+
+            activeStack.innerHTML = `
+                <span class="text-xs text-slate-400 text-center pointer-events-none" id="stack-placeholder">
+                    Klik kartu Kodomain dari Deck terlebih dahulu untuk membuka target relasi!
+                </span>
+            `;
+
+            const activeStatusEl = document.getElementById('active-status');
+            if (activeStatusEl) {
+                activeStatusEl.innerText = "Menunggu Kartu Dibuka";
+                activeStatusEl.className = "text-xs font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full";
+            }
+            
+            nextRoundBtn.disabled = true;
+            nextRoundBtn.className = "flex-1 bg-slate-350 text-slate-500 cursor-not-allowed font-black py-3 px-6 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 border-2 border-slate-400";
+            passTurnBtn.disabled = true;
+            passTurnBtn.className = "flex-1 bg-slate-200 text-slate-400 cursor-not-allowed font-bold py-3 px-6 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 border-2 border-slate-300";
+        }
+
+        function drawNextKodomain() {
+            if (activeKodomain) {
+                showModal('Ronde Berjalan', 'Kamu harus menyelesaikan ronde aktif sebelum membuka kartu target baru!', 'error');
+                return;
+            }
+
+            if (kodomainDeck.length === 0) {
+                return;
+            }
+
+            activeKodomain = kodomainDeck.shift();
+            activeRelationsMatched = [];
+            
+            players.forEach(p => {
+                p.hasTakenTurnThisRound = false;
+                p.currentRoundMatches = []; 
+            });
+            currentPlayerIdx = 0; 
+            domainHand = players[currentPlayerIdx].hand;
+
+            updateDeckUI();
+
+            activeKodomainCard.style.backgroundColor = activeKodomain.color;
+            activeKodomainCard.style.borderColor = '#ffffff';
+            activeKodomainCard.innerHTML = `
+                <span class="text-xs font-black mb-2 text-indigo-900 tracking-wider">KODOMAIN</span>
+                <p class="text-md font-extrabold text-indigo-950" id="kodomain-text">${activeKodomain.title}</p>
+                <div class="absolute top-2 right-2 text-[10px] text-rose-500 font-bold brand-font">B</div>
+            `;
+
+            let relationText = (currentMode === 'kartun') ? 'Karakter Dari' : activeKodomain.ruleLabel;
+
+            activeRelationCard.innerHTML = `
+                <span class="text-2xl font-black mb-2 text-blue-900">ATURAN</span>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Penentu</p>
+                <p class="text-sm font-extrabold text-indigo-900 mt-1" id="relation-text">${relationText}</p>
+            `;
+
+            activeStack.innerHTML = '';
+            
+            if (isMultiplayer) {
+                updateMultiplayerUI();
+                passTurnBtn.disabled = false;
+                passTurnBtn.className = "flex-1 bg-amber-500 hover:bg-amber-600 text-white font-extrabold py-3 px-6 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer border-2 border-amber-400";
+                
+                nextRoundBtn.disabled = true;
+                nextRoundBtn.className = "flex-1 bg-slate-350 text-slate-500 cursor-not-allowed font-black py-3 px-6 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 border-2 border-slate-400";
+            } else {
+                updateMultiplayerUI();
+                passTurnBtn.disabled = true;
+                passTurnBtn.className = "hidden";
+                
+                nextRoundBtn.disabled = false;
+                nextRoundBtn.className = "flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer border-2 border-indigo-400";
+            }
+
+            renderDomainHand();
+            updateSisaDomainCounter();
+            drawLiveVenn();
+        }
+
+        function attemptMatch(cardId) {
+            if (!activeKodomain) {
+                showModal('Buka Target', 'Silakan buka tumpukan kartu target Kodomain di kiri atas terlebih dahulu!', 'error');
+                return;
+            }
+
+            const domainItem = players[currentPlayerIdx].hand.find(item => item.id === cardId);
+            if (!domainItem) return;
+
+            let isCorrect = false;
+            let errorFeedback = '';
+
+            if (currentMode === 'kartun') {
+                isCorrect = (domainItem.showId === activeKodomain.id);
+                errorFeedback = `"${domainItem.name}" bukan merupakan karakter dari "${activeKodomain.title}"!`;
+            } else {
+                const x = domainItem.val;
+                const y = activeKodomain.val;
+                const name = domainItem.name;
+
+                if (activeKodomain.rule === 'habis_dibagi') {
+                    isCorrect = (x % y === 0);
+                    errorFeedback = `Bilangan ${name} (bernilai ${x}) tidak habis dibagi oleh ${y}!`;
+                } else if (activeKodomain.rule === 'kelipatan_dari') {
+                    isCorrect = (x % y === 0);
+                    errorFeedback = `Bilangan ${name} (bernilai ${x}) bukan merupakan kelipatan dari ${y}!`;
+                }
+            }
+
+            if (isCorrect) {
+                players[currentPlayerIdx].hand = players[currentPlayerIdx].hand.filter(item => item.id !== cardId);
+                domainHand = players[currentPlayerIdx].hand; 
+                
+                players[currentPlayerIdx].currentRoundMatches.push(domainItem);
+                
+                players[currentPlayerIdx].matches.push({
+                    domain: domainItem,
+                    kodomain: activeKodomain
+                });
+
+                players[currentPlayerIdx].score += 10;
+
+                updateMultiplayerUI();
+                renderActiveStack(); 
+                renderDomainHand();
+                updateSisaDomainCounter();
+                drawLiveVenn(); 
+            } else {
+                players[currentPlayerIdx].score = Math.max(0, players[currentPlayerIdx].score - 5);
+                updateMultiplayerUI();
+
+                const wrongCard = document.getElementById(`card-${cardId}`);
+                if (wrongCard) {
+                    wrongCard.classList.remove('anim-shake');
+                    void wrongCard.offsetWidth;
+                    wrongCard.classList.add('anim-shake');
+                }
+
+                if (isMultiplayer) {
+                    players[currentPlayerIdx].hasTakenTurnThisRound = true;
+                    const previousPlayerName = players[currentPlayerIdx].name;
+                    nextPlayerTurn();
+                    const nextPlayerName = players[currentPlayerIdx].name;
+                    showModal('Kurang Tepat & Ganti Giliran!', `${errorFeedback}\n\nSkor ${previousPlayerName} dipotong -5 dan giliran habis!\n\nSekarang giliran ${nextPlayerName}!`, 'error');
+                } else {
+                    showModal('Kurang Tepat', errorFeedback, 'error');
+                }
+            }
+        }
+
+        function passTurn() {
+            if (!isMultiplayer || !activeKodomain) return;
+
+            players[currentPlayerIdx].hasTakenTurnThisRound = true;
+            const previousPlayerName = players[currentPlayerIdx].name;
+
+            nextPlayerTurn();
+            const nextPlayerName = players[currentPlayerIdx].name;
+            
+            showModal('Selesai Giliran!', `${previousPlayerName} telah menuntaskan giliran bermainnya pada ronde ini.\n\nSekarang giliran ${nextPlayerName}!`, 'success');
+        }
+
+        function nextPlayerTurn() {
+            if (!isMultiplayer) return;
+            
+            const allPlayersFinished = players.every(p => p.hasTakenTurnThisRound || p.hand.length === 0);
+            
+            if (allPlayersFinished) {
+                const activeStatusEl = document.getElementById('active-status');
+                if (activeStatusEl) {
+                    activeStatusEl.innerText = "Ronde Selesai! Klik Konfirmasi";
+                    activeStatusEl.className = "text-xs font-black bg-emerald-600 text-white px-3 py-1.5 rounded-full border-2 border-emerald-400 animate-bounce";
+                }
+                
+                nextRoundBtn.disabled = false;
+                nextRoundBtn.className = "flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 px-6 rounded-xl transition-all shadow-md hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer border-2 border-emerald-400";
+                
+                passTurnBtn.disabled = true;
+                passTurnBtn.className = "flex-1 bg-slate-200 text-slate-400 cursor-not-allowed font-bold py-3 px-6 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 border-2 border-slate-300";
+                
+                deckPile.style.pointerEvents = 'none';
+            } else {
+                let nextIdx = (currentPlayerIdx + 1) % players.length;
+                let loops = 0;
+                while ((players[nextIdx].hasTakenTurnThisRound || players[nextIdx].hand.length === 0) && loops < players.length) {
+                    nextIdx = (nextIdx + 1) % players.length;
+                    loops++;
+                }
+                
+                currentPlayerIdx = nextIdx;
+                domainHand = players[currentPlayerIdx].hand; 
+
+                updateMultiplayerUI();
+                renderActiveStack(); 
+                renderDomainHand();
+                updateSisaDomainCounter();
+                drawLiveVenn(); 
+            }
+        }
+
+        function renderActiveStack() {
+            activeStack.innerHTML = '';
+            const activePlayer = players[currentPlayerIdx];
+
+            if (!activePlayer.currentRoundMatches || activePlayer.currentRoundMatches.length === 0) {
+                activeStack.innerHTML = `
+                    <span class="text-xs text-slate-500 font-bold text-center pointer-events-none" id="stack-placeholder">
+                        Klik langsung kartu Domain di bawah untuk memasukannya secara otomatis!
+                    </span>
+                `;
+                return;
+            }
+
+            activePlayer.currentRoundMatches.forEach(item => {
+                const pairBadge = document.createElement('div');
+                pairBadge.className = 'bg-emerald-100 border-2 border-emerald-400 text-emerald-950 font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm text-xs animate-[popIn_0.3s_ease-out]';
+                pairBadge.innerHTML = `
+                    <span class="text-emerald-750 font-extrabold">(</span>
+                    <span class="text-base font-black">${item.icon}</span>
+                    <span>${item.name}</span>
+                    <span class="text-emerald-600 font-black">,</span>
+                    <span class="bg-emerald-200 px-2.5 py-0.5 rounded-md text-[10px] text-emerald-900">${activeKodomain.title}</span>
+                    <span class="text-emerald-750 font-extrabold">)</span>
+                `;
+                activeStack.appendChild(pairBadge);
+            });
+        }
+
+        function archiveCurrentRound() {
+            if (!activeKodomain) return;
+
+            const roundMatches = [];
+            players.forEach(p => {
+                if (p.currentRoundMatches) {
+                    roundMatches.push(...p.currentRoundMatches);
+                }
+            });
+
+            archivedRounds.push({
+                kodomain: activeKodomain,
+                matches: roundMatches
+            });
+
+            updateArchiveSidebar();
+
+            deckPile.style.pointerEvents = 'auto';
+
+            activeKodomain = null;
+            activeRelationsMatched = [];
+            resetWorkspaceUI();
+
+            if (kodomainDeck.length === 0) {
+                const sorted = [...players].sort((a,b) => b.score - a.score);
+                if (isMultiplayer) {
+                    document.getElementById('multiplayer-winner-declaration').classList.remove('hidden');
+                    document.getElementById('winner-name-text').innerText = `Pemenang Utama: ${sorted[0].name} dengan skor tertinggi ${sorted[0].score} Poin!`;
+                } else {
+                    document.getElementById('multiplayer-winner-declaration').classList.add('hidden');
+                }
+                
+                document.getElementById('cert-recipient-name').innerText = sorted[0].name;
+
+                setTimeout(() => {
+                    initQuiz();
+                    learningModal.classList.add('active');
+                }, 600);
+            } else {
+                players.forEach(p => {
+                    p.hasTakenTurnThisRound = false;
+                    p.currentRoundMatches = [];
+                });
+                currentPlayerIdx = 0;
+                domainHand = players[currentPlayerIdx].hand; 
+                
+                updateMultiplayerUI();
+                renderDomainHand();
+                updateSisaDomainCounter();
+                drawLiveVenn();
+            }
+        }
+
+        function updateArchiveSidebar() {
+            archiveList.innerHTML = '';
+            if (archivedRounds.length === 0) return;
+
+            archivedRounds.forEach((round, index) => {
+                const item = document.createElement('div');
+                item.className = 'w-full bg-slate-50 border border-slate-200 p-2.5 rounded-xl flex flex-col gap-0.5 text-slate-700 shadow-sm text-[11px]';
+                
+                const listName = round.matches.length > 0 
+                    ? round.matches.map(m => `(${m.name}, ${round.kodomain.title})`).join(', ') 
+                    : '<span class="italic text-slate-400 text-[10px]">Tidak ada pasangan</span>';
+                
+                let ruleLabel = currentMode === 'kartun' ? 'Karakter Dari' : round.kodomain.ruleLabel;
+
+                item.innerHTML = `
+                    <div class="flex items-center justify-between font-bold text-slate-900 pb-1 border-b border-slate-150">
+                        <span>Ronde #${index + 1}</span>
+                        <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold" style="background-color: ${round.kodomain.color}">${round.kodomain.title}</span>
+                    </div>
+                    <p class="text-[9px] text-indigo-600 font-bold uppercase mt-1">Aturan: "${ruleLabel}"</p>
+                    <div class="text-[10px] text-slate-600 bg-white p-1.5 rounded border border-slate-100 mt-1 max-h-[45px] overflow-y-auto font-mono">
+                        ${listName}
+                    </div>
+                `;
+                archiveList.appendChild(item);
+            });
+            
+            archiveList.scrollTop = archiveList.scrollHeight;
+        }
+
+        function drawLiveVenn() {
+            const container = document.getElementById('live-venn-container');
+            const activePlayer = players[currentPlayerIdx];
+            renderVennSVG(activePlayer.matches, container, { activeHighlight: activeKodomain, playerDomain: activePlayer.startingDomain });
+        }
+
+        function renderVennSVG(matches, containerElement, options = {}) {
+            containerElement.innerHTML = '';
+
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, "svg");
+            svg.setAttribute("viewBox", "0 0 450 350");
+            svg.setAttribute("class", "w-full h-full");
+
+            const defs = document.createElementNS(svgNS, "defs");
+            defs.innerHTML = `
+                <marker id="arrowhead" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 2 L 8 5 L 0 8 z" fill="#4f46e5" />
+                </marker>
+                <marker id="arrowhead-active" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 2 L 8 5 L 0 8 z" fill="#f59e0b" />
+                </marker>
+            `;
+            svg.appendChild(defs);
+
+            const ellipseA = document.createElementNS(svgNS, "ellipse");
+            ellipseA.setAttribute("cx", "115");
+            ellipseA.setAttribute("cy", "175");
+            ellipseA.setAttribute("rx", "95");
+            ellipseA.setAttribute("ry", "135");
+            ellipseA.setAttribute("class", "venn-ellipse stroke-indigo-600 fill-indigo-500");
+            svg.appendChild(ellipseA);
+
+            const labelA = document.createElementNS(svgNS, "text");
+            labelA.setAttribute("x", "115");
+            labelA.setAttribute("y", "28");
+            labelA.setAttribute("text-anchor", "middle");
+            labelA.setAttribute("class", "text-[16px] font-extrabold fill-indigo-900 brand-font");
+            labelA.textContent = "Domain (A)";
+            svg.appendChild(labelA);
+
+            const ellipseB = document.createElementNS(svgNS, "ellipse");
+            ellipseB.setAttribute("cx", "335");
+            ellipseB.setAttribute("cy", "175");
+            ellipseB.setAttribute("rx", "95");
+            ellipseB.setAttribute("ry", "135");
+            ellipseB.setAttribute("class", "venn-ellipse stroke-rose-600 fill-rose-500");
+            svg.appendChild(ellipseB);
+
+            const labelB = document.createElementNS(svgNS, "text");
+            labelB.setAttribute("x", "335");
+            labelB.setAttribute("y", "28");
+            labelB.setAttribute("text-anchor", "middle");
+            labelB.setAttribute("class", "text-[16px] font-extrabold fill-rose-900 brand-font");
+            labelB.textContent = "Kodomain (B)";
+            svg.appendChild(labelB);
+
+            let domainItems = options.playerDomain || currentVennDomainItems;
+            let kodomainItems = currentVennKodomainItems;
+
+            const aPositions = {};
+            const colWidth = 60;
+            const startX = 85; 
+
+            const totalRows = Math.ceil(domainItems.length / 2);
+            const rowHeight = Math.min(28, 220 / (totalRows || 1));
+            const startY = 175 - ((totalRows - 1) * rowHeight) / 2;
+
+            domainItems.forEach((item, idx) => {
+                const colIdx = idx % 2;
+                const rowIdx = Math.floor(idx / 2);
+                
+                const xPos = startX + (colIdx * colWidth);
+                const yPos = startY + (rowIdx * rowHeight);
+
+                aPositions[item.id] = { x: xPos + 10, y: yPos };
+
+                const circle = document.createElementNS(svgNS, "circle");
+                circle.setAttribute("cx", `${xPos + 10}`);
+                circle.setAttribute("cy", `${yPos}`);
+                circle.setAttribute("r", "5.5");
+                circle.setAttribute("fill", "#312e81");
+                svg.appendChild(circle);
+
+                const text = document.createElementNS(svgNS, "text");
+                text.setAttribute("x", `${xPos + 2}`);
+                text.setAttribute("y", `${yPos + 3.5}`);
+                text.setAttribute("text-anchor", "end");
+                text.setAttribute("class", "text-[11px] font-bold fill-indigo-950 pointer-events-none");
+                text.textContent = item.name;
+                svg.appendChild(text);
+            });
+
+            const bPositions = {};
+            kodomainItems.forEach((item, index) => {
+                const step = 225 / (kodomainItems.length - 1 || 1);
+                const yPos = 65 + (index * step);
+                const xPos = 295;
+
+                bPositions[item.id] = { x: xPos, y: yPos };
+
+                const circle = document.createElementNS(svgNS, "circle");
+                circle.setAttribute("cx", `${xPos}`);
+                circle.setAttribute("cy", `${yPos}`);
+                circle.setAttribute("r", "6");
+                circle.setAttribute("fill", "#f43f5e");
+                svg.appendChild(circle);
+
+                const text = document.createElementNS(svgNS, "text");
+                text.setAttribute("x", `${xPos + 12}`);
+                text.setAttribute("y", `${yPos + 4.5}`);
+                text.setAttribute("class", "text-[13px] font-extrabold fill-slate-900 pointer-events-none");
+                text.textContent = item.title;
+                svg.appendChild(text);
+            });
+
+            matches.forEach(m => {
+                const start = aPositions[m.domain.id];
+                const dest = bPositions[m.kodomain.id];
+
+                if (start && dest) {
+                    const arrow = document.createElementNS(svgNS, "path");
+                    const ctrlX = (start.x + dest.x) / 2;
+                    const ctrlY = ((start.y + dest.y) / 2) - 15;
+                    arrow.setAttribute("d", `M ${start.x} ${start.y} Q ${ctrlX} ${ctrlY} ${dest.x - 7} ${dest.y}`);
+                    arrow.setAttribute("class", "venn-arrow stroke-indigo-500 stroke-[2.5]");
+                    svg.appendChild(arrow);
+                }
+            });
+
+            const activePlayer = players[currentPlayerIdx];
+            if (activeKodomain && activePlayer.currentRoundMatches && activePlayer.currentRoundMatches.length > 0 && bPositions[activeKodomain.id]) {
+                const dest = bPositions[activeKodomain.id];
+                activePlayer.currentRoundMatches.forEach(item => {
+                    const start = aPositions[item.id];
+                    if (start) {
+                        const activeArrow = document.createElementNS(svgNS, "path");
+                        const ctrlX = (start.x + dest.x) / 2;
+                        const ctrlY = ((start.y + dest.y) / 2) - 15;
+                        activeArrow.setAttribute("d", `M ${start.x} ${start.y} Q ${ctrlX} ${ctrlY} ${dest.x - 7} ${dest.y}`);
+                        activeArrow.setAttribute("class", "venn-arrow stroke-amber-500 stroke-[3.5]");
+                        activeArrow.setAttribute("marker-end", "url(#arrowhead-active)");
+                        svg.appendChild(activeArrow);
+                    }
+                });
+            }
+
+            const mappedTargetIds = [...new Set(matches.map(m => m.kodomain.id))];
+            if (activeKodomain && activePlayer.currentRoundMatches && activePlayer.currentRoundMatches.length > 0) {
+                mappedTargetIds.push(activeKodomain.id);
+            }
+
+            mappedTargetIds.forEach(id => {
+                if (bPositions[id]) {
+                    const pos = bPositions[id];
+                    
+                    const rangeHalo = document.createElementNS(svgNS, "rect");
+                    rangeHalo.setAttribute("x", `${pos.x - 12}`);
+                    rangeHalo.setAttribute("y", `${pos.y - 12}`);
+                    rangeHalo.setAttribute("width", "135"); 
+                    rangeHalo.setAttribute("height", "24");
+                    rangeHalo.setAttribute("rx", "12");
+                    rangeHalo.setAttribute("ry", "12");
+                    rangeHalo.setAttribute("fill", "#10b981");
+                    rangeHalo.setAttribute("fill-opacity", "0.15");
+                    rangeHalo.setAttribute("stroke", "#10b981");
+                    rangeHalo.setAttribute("stroke-width", "2.5");
+                    rangeHalo.setAttribute("stroke-dasharray", "4,3");
+                    svg.appendChild(rangeHalo);
+
+                    if (id === mappedTargetIds[0]) {
+                        const rLabel = document.createElementNS(svgNS, "text");
+                        rLabel.setAttribute("x", `${pos.x - 15}`);
+                        rLabel.setAttribute("y", `${pos.y + 4}`);
+                        rLabel.setAttribute("text-anchor", "end");
+                        rLabel.setAttribute("class", "text-[10px] font-extrabold fill-emerald-600 uppercase tracking-wider brand-font");
+                        rLabel.textContent = "Range ➔";
+                        svg.appendChild(rLabel);
+                    }
+                }
+            });
+
+            containerElement.appendChild(svg);
+        }
+
+        function drawQuizVenn() {
+            const container = document.getElementById('quiz-venn-container');
+            const activePlayer = players[currentPlayerIdx];
+            renderVennSVG(activePlayer.matches, container, { playerDomain: activePlayer.startingDomain });
+        }
+
+
+        // --- LOGIKA KUIS EVALUASI BELAJAR (6 PERTANYAAN TAHAP DEMI TAHAP) ---
+
+        function initQuiz() {
+            quizCurrentStep = 0;
+            quizScore = 0;
+            selectedQuizOptionIndex = null;
+            
+            document.getElementById('quiz-intro-screen').style.display = 'block';
+            document.getElementById('quiz-stage-screen').classList.add('hidden');
+            document.getElementById('quiz-summary-screen').classList.add('hidden');
+
+            generateQuizQuestions();
+        }
+
+        function generateQuizQuestions() {
+            let domainListStr = currentVennDomainItems.map(c => c.name).join(', ');
+            let kodomainListStr = currentVennKodomainItems.map(s => s.title).join(', ');
+            
+            // Generate Range berdasar yang DIKLIK oleh pemain (matches yang tersimpan)
+            let allMatchedKods = [];
+            archivedRounds.forEach(r => {
+                if (r.matches.length > 0) {
+                    allMatchedKods.push(r.kodomain.title);
+                }
+            });
+            let uniqueRange = [...new Set(allMatchedKods)];
+            let rangeListStr = uniqueRange.length > 0 ? uniqueRange.join(', ') : 'KOSONG';
+
+            // Generate Pasangan Berurutan untuk pertanyaan Quiz khusus output
+            let allPlayerMatches = [];
+            players.forEach(p => allPlayerMatches.push(...p.matches));
+            let pairedListStr = allPlayerMatches.length > 0
+                ? allPlayerMatches.map(m => `(${m.domain.name}, ${m.kodomain.title})`).join(', ')
+                : 'KOSONG';
+
+            if (currentMode === 'kartun') {
+                quizQuestionsData = [
+                    {
+                        badge: "Tahap 1: Analisis Anggota Himpunan",
+                        question: "Berdasarkan seluruh kartu awal yang dibagikan kepadamu, manakah kumpulan anggota yang termasuk ke dalam DOMAIN (Daerah Asal)!",
+                        options: [
+                            { text: `Himpunan Domain A = { ${domainListStr} }`, correct: true },
+                            { text: `Himpunan Domain A = { ${kodomainListStr} }`, correct: false },
+                            { text: `Himpunan Domain A = { ${rangeListStr} }`, correct: false }
+                        ],
+                        hint: `Perhatikan semua nama karakter kartun yang berada di dalam lingkaran sebelah kiri (Set A).`
+                    },
+                    {
+                        badge: "Tahap 1: Analisis Anggota Himpunan",
+                        question: "Berdasarkan seluruh kartu target yang tersedia di tumpukan, manakah kumpulan anggota yang termasuk ke dalam KODOMAIN (Daerah Kawan)!",
+                        options: [
+                            { text: `Himpunan Kodomain B = { ${rangeListStr} }`, correct: false },
+                            { text: `Himpunan Kodomain B = { ${domainListStr} }`, correct: false },
+                            { text: `Himpunan Kodomain B = { ${kodomainListStr} }`, correct: true }
+                        ],
+                        hint: `Perhatikan seluruh nama film kartun yang ada di lingkaran kanan (Set B), baik yang terisi maupun kosong.`
+                    },
+                    {
+                        badge: "Tahap 1: Analisis Anggota Himpunan",
+                        question: "Berdasarkan KARTU YANG BERHASIL KAMU KLIK DAN PASANGKAN selama permainan tadi, tentukan anggota yang termasuk ke dalam RANGE (Daerah Hasil)!",
+                        options: [
+                            { text: `Himpunan Range = { ${kodomainListStr} }`, correct: false },
+                            { text: `Himpunan Range = { ${rangeListStr} }`, correct: true },
+                            { text: `Himpunan Range = { ${domainListStr} }`, correct: false }
+                        ],
+                        hint: `Range hanya memuat judul kartun di Set B yang dilingkari garis hijau karena berhasil kamu pasangkan.`
+                    },
+                    {
+                        badge: "Tahap 2: Bukti Pasangan",
+                        question: "Berdasarkan seluruh klik dan pasangan karakter yang kamu buat tadi, manakah penulisan Himpunan Pasangan Berurutan yang tepat?",
+                        options: [
+                            { text: `Himpunan Pasangan = { ${pairedListStr} }`, correct: true },
+                            { text: `Himpunan Pasangan = { ${kodomainListStr} }`, correct: false },
+                            { text: `Himpunan Pasangan = { ${domainListStr} }`, correct: false }
+                        ],
+                        hint: `Cari himpunan yang mendaftar (Domain, Kodomain) sesuai hasil relasi buatanmu.`
+                    },
+                    {
+                        badge: "Tahap 3: Kesimpulan",
+                        question: "Apakah definisi yang paling tepat tentang KODOMAIN?",
+                        options: [
+                            { text: "Himpunan semua daerah hasil yang hanya berisi elemen terpilih saja.", correct: false },
+                            { text: "Himpunan semua anggota daerah kawan (Set B) yang disediakan untuk berpotensi menjadi pasangan dari Domain.", correct: true },
+                            { text: "Himpunan daerah asal mula-mula yang memuat seluruh karakter.", correct: false }
+                        ],
+                        hint: `Kodomain mencakup semua kemungkinan kawan di Set B tanpa peduli ia terpilih atau tidak.`
+                    },
+                    {
+                        badge: "Tahap 3: Kesimpulan",
+                        question: "Berdasarkan aksi pasang-memasang kartumu tadi, apakah arti sesungguhnya dari RANGE?",
+                        options: [
+                            { text: "Range adalah seluruh anggota Kodomain yang benar-benar BERHASIL memiliki pasangan dari Domain.", correct: true },
+                            { text: "Range adalah salinan utuh dari seluruh anggota Kodomain.", correct: false },
+                            { text: "Range adalah garis penghubung panah dari himpunan kiri ke kanan.", correct: false }
+                        ],
+                        hint: `Ingat, beberapa film tetap kosong jika kamu tidak memasangkannya. Maka Range hanya berisi film yang punya pasangan.`
+                    }
+                ];
+            } else {
+                quizQuestionsData = [
+                    {
+                        badge: "Tahap 1: Analisis Anggota Himpunan",
+                        question: "Berdasarkan seluruh kartu angka mula-mula yang dibagikan kepadamu, manakah yang merupakan kumpulan anggota DOMAIN (Daerah Asal) secara tepat?",
+                        options: [
+                            { text: `Himpunan Domain A = { ${domainListStr} }`, correct: true },
+                            { text: `Himpunan Domain A = { ${kodomainListStr} }`, correct: false },
+                            { text: `Himpunan Domain A = { ${rangeListStr} }`, correct: false }
+                        ],
+                        hint: `Cari semua bilangan asal di dalam lingkaran Set A (sebelah kiri).`
+                    },
+                    {
+                        badge: "Tahap 1: Analisis Anggota Himpunan",
+                        question: "Berdasarkan seluruh kartu target yang tersedia di tumpukan, tentukan seluruh kawan anggota yang berada di dalam KODOMAIN (Daerah Kawan)!",
+                        options: [
+                            { text: `Himpunan Kodomain B = { ${rangeListStr} }`, correct: false },
+                            { text: `Himpunan Kodomain B = { ${domainListStr} }`, correct: false },
+                            { text: `Himpunan Kodomain B = { ${kodomainListStr} }`, correct: true }
+                        ],
+                        hint: `Kodomain adalah kumpulan seluruh target angka kawan yang ada di lingkaran kanan (Set B).`
+                    },
+                    {
+                        badge: "Tahap 1: Analisis Anggota Himpunan",
+                        question: "Berdasarkan ANGKA YANG BERHASIL KAMU KLIK DAN PASANGKAN tadi, tentukan anggota himpunan yang lolos uji relasi sebagai RANGE (Daerah Hasil)!",
+                        options: [
+                            { text: `Himpunan Range = { ${kodomainListStr} }`, correct: false },
+                            { text: `Himpunan Range = { ${rangeListStr} }`, correct: true },
+                            { text: `Himpunan Range = { ${domainListStr} }`, correct: false }
+                        ],
+                        hint: `Range hanya memuat angka di Set B yang dilingkari garis hijau karena lolos uji dan berhasil kamu pasangkan.`
+                    },
+                    {
+                        badge: "Tahap 2: Bukti Pasangan",
+                        question: "Berdasarkan semua angka yang kamu klik dan pasangkan tadi, manakah penulisan Himpunan Pasangan Berurutan yang tepat?",
+                        options: [
+                            { text: `Himpunan Pasangan = { ${pairedListStr} }`, correct: true },
+                            { text: `Himpunan Pasangan = { ${kodomainListStr} }`, correct: false },
+                            { text: `Himpunan Pasangan = { ${domainListStr} }`, correct: false }
+                        ],
+                        hint: `Pasangan berurutan ditulis dalam kurung (Nilai Asal, Target Kawan).`
+                    },
+                    {
+                        badge: "Tahap 3: Kesimpulan",
+                        question: "Apakah arti dari KODOMAIN dalam matematika?",
+                        options: [
+                            { text: "Seluruh kumpulan kemungkinan daerah kawan hasil (Set B) yang disediakan dalam pemetaan fungsi.", correct: true },
+                            { text: "Nilai hasil pembagian bulat yang tidak menyisakan sisa.", correct: false },
+                            { text: "Semua angka asal yang tidak lolos uji persamaan matematika.", correct: false }
+                        ],
+                        hint: `Kodomain adalah semua kemungkinan angka tujuan di sebelah kanan.`
+                    },
+                    {
+                        badge: "Tahap 3: Kesimpulan",
+                        question: "Berdasarkan hasil klik relasimu tadi, apakah arti RANGE di dalam fungsi matematika?",
+                        options: [
+                            { text: "Himpunan bagian dari Kodomain (Range ⊆ Kodomain) yang memuat nilai-nilai yang benar-benar BERHASIL berpasangan dengan Domain.", correct: true },
+                            { text: "Himpunan angka acak di luar lingkaran Diagram Venn.", correct: false },
+                            { text: "Hasil operasi perkalian 2 dari angka ganjil saja.", correct: false }
+                        ],
+                        hint: `Ingat bahwa beberapa angka target tidak memiliki panah jika kamu tidak memasangkannya. Maka mereka bukan bagian dari Range.`
+                    }
+                ];
+            }
+
+            document.getElementById('summary-domain-list').innerHTML = `{ ${domainListStr} }`;
+            document.getElementById('summary-kodomain-list').innerHTML = `{ ${kodomainListStr} }`;
+            document.getElementById('summary-range-list').innerHTML = `{ ${rangeListStr} }`;
+        }
+
+        function startQuiz() {
+            document.getElementById('quiz-intro-screen').style.display = 'none';
+            document.getElementById('quiz-stage-screen').classList.remove('hidden');
+            quizCurrentStep = 0;
+            renderQuizStep();
+        }
+
+        function renderQuizStep() {
+            const data = quizQuestionsData[quizCurrentStep];
+            selectedQuizOptionIndex = null;
+            
+            document.getElementById('quiz-progress').style.width = `${((quizCurrentStep + 1) / 6) * 100}%`;
+            document.getElementById('quiz-badge').innerText = `TANTANGAN #${quizCurrentStep + 1}: ${data.badge}`;
+            document.getElementById('quiz-question').innerText = data.question;
+            
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+            
+            const optionPastelBgs = [
+                'bg-pink-300 border-pink-500 hover:bg-pink-400 text-pink-950', 
+                'bg-cyan-300 border-cyan-500 hover:bg-cyan-400 text-cyan-950', 
+                'bg-emerald-300 border-emerald-500 hover:bg-emerald-400 text-emerald-950'
+            ];
+
+            data.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                const optBg = optionPastelBgs[idx % optionPastelBgs.length];
+                btn.className = `w-full text-left p-4 rounded-xl border-4 ${optBg} transition-all font-bold flex items-start gap-3 shadow-md`;
+                btn.innerHTML = `
+                    <span class="w-6 h-6 flex items-center justify-center rounded-full bg-white text-indigo-900 font-extrabold text-xs shrink-0 mt-0.5 shadow-sm">${String.fromCharCode(65 + idx)}</span>
+                    <span class="text-sm md:text-base leading-relaxed">${opt.text}</span>
+                `;
+                btn.onclick = () => selectQuizOption(idx, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            const hintDiv = document.createElement('div');
+            hintDiv.className = "bg-amber-200 border-4 border-amber-300 p-3.5 rounded-xl text-xs text-amber-950 mt-4 leading-relaxed italic font-bold shadow-inner";
+            hintDiv.innerHTML = `INFO <strong>Petunjuk dari permainanmu:</strong><br>${data.hint}`;
+            optionsContainer.appendChild(hintDiv);
+
+            const feedbackBox = document.getElementById('quiz-feedback');
+            feedbackBox.className = "mt-6 p-4 rounded-xl hidden";
+            feedbackBox.innerHTML = '';
+            
+            const nextBtn = document.getElementById('quiz-next-btn');
+            nextBtn.disabled = true;
+            nextBtn.className = "bg-slate-355 text-slate-500 cursor-not-allowed font-bold py-3 px-8 rounded-xl transition-all shadow-sm border-2 border-slate-400";
+
+            drawQuizVenn();
+        }
+
+        function selectQuizOption(index, buttonElement) {
+            const optionButtons = document.getElementById('quiz-options').querySelectorAll('button');
+            const optionPastelBgs = [
+                'bg-pink-300 border-pink-500 hover:bg-pink-400 text-pink-950', 
+                'bg-cyan-300 border-cyan-500 hover:bg-cyan-400 text-cyan-950', 
+                'bg-emerald-300 border-emerald-500 hover:bg-emerald-400 text-emerald-950'
+            ];
+
+            optionButtons.forEach((btn, idx) => {
+                const baseBg = optionPastelBgs[idx % optionPastelBgs.length];
+                btn.className = `w-full text-left p-4 rounded-xl border-4 ${baseBg} transition-all font-bold flex items-start gap-3 shadow-md`;
+                btn.querySelector('span').className = "w-6 h-6 flex items-center justify-center rounded-full bg-white text-indigo-800 font-extrabold text-xs shrink-0 mt-0.5 shadow-sm";
+            });
+
+            selectedQuizOptionIndex = index;
+            buttonElement.className = "w-full text-left p-4 rounded-xl border-4 border-indigo-700 bg-indigo-200 text-indigo-950 transition-all font-extrabold flex items-start gap-3 shadow-inner";
+            buttonElement.querySelector('span').className = "w-6 h-6 flex items-center justify-center rounded-full bg-indigo-700 text-white font-extrabold text-xs shrink-0 mt-0.5 shadow-md";
+
+            evaluateQuizAnswer();
+        }
+
+        function evaluateQuizAnswer() {
+            if (selectedQuizOptionIndex === null) return;
+
+            const questionData = quizQuestionsData[quizCurrentStep];
+            const isCorrect = questionData.options[selectedQuizOptionIndex].correct;
+            
+            const feedbackBox = document.getElementById('quiz-feedback');
+            feedbackBox.classList.remove('hidden');
+            
+            if (isCorrect) {
+                feedbackBox.className = "mt-6 p-4 rounded-xl bg-emerald-100 border-4 border-emerald-300 text-emerald-900 text-sm font-bold animate-pulse";
+                feedbackBox.innerHTML = `<strong>BENAR SEKALI!</strong> Pemahamanmu luar biasa presisi. Silakan klik tombol di bawah untuk lanjut!`;
+                quizScore++;
+            } else {
+                feedbackBox.className = "mt-6 p-4 rounded-xl bg-rose-100 border-4 border-rose-350 text-rose-950 text-sm font-bold";
+                feedbackBox.innerHTML = `<strong>KURANG TEPAT.</strong> Tapi tidak apa-apa, ayo coba pahami lagi konsep dari petunjuk di atas dan pilih jawaban yang benar!`;
+            }
+
+            const nextBtn = document.getElementById('quiz-next-btn');
+            nextBtn.disabled = false;
+            nextBtn.className = "bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 px-8 rounded-xl transition-all shadow-md cursor-pointer flex items-center border-2 border-indigo-400";
+            if (quizCurrentStep === 5) {
+                nextBtn.innerHTML = `Lihat Rangkuman Hasil <i class="fa-solid fa-graduation-cap ml-2"></i>`;
+            } else {
+                nextBtn.innerHTML = `Pertanyaan Selanjutnya <i class="fa-solid fa-arrow-right ml-2"></i>`;
+            }
+        }
+
+        function nextQuizStep() {
+            if (quizCurrentStep < 5) {
+                quizCurrentStep++;
+                renderQuizStep();
+            } else {
+                document.getElementById('quiz-stage-screen').classList.add('hidden');
+                document.getElementById('quiz-summary-screen').classList.remove('hidden');
+                renderFinalPlayersVennGrid();
+            }
+        }
+
+        function renderFinalPlayersVennGrid() {
+            const grid = document.getElementById('summary-players-grid');
+            grid.innerHTML = '';
+
+            const playerCardPastelBgs = ['bg-pink-100 border-pink-300', 'bg-blue-100 border-blue-300', 'bg-emerald-100 border-emerald-300', 'bg-purple-100 border-purple-300'];
+
+            players.forEach((player, idx) => {
+                const uniqueMatchedTargets = [...new Set(player.matches.map(m => m.kodomain.title))];
+                const rangeStr = uniqueMatchedTargets.length > 0 
+                    ? `{ ${uniqueMatchedTargets.join(', ')} }` 
+                    : '{ <span class="italic text-slate-400">Kosong</span> }';
+
+                const card = document.createElement('div');
+                const cardBg = playerCardPastelBgs[idx % playerCardPastelBgs.length];
+                card.className = `${cardBg} border-4 p-5 rounded-2xl shadow-sm flex flex-col items-center gap-3`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between w-full border-b-2 pb-2 mb-1 border-white/60">
+                        <h4 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-user text-indigo-600 mr-2"></i>${player.name}</h4>
+                        <span class="bg-indigo-50 text-indigo-700 text-xs font-bold px-2.5 py-0.5 rounded-full">${player.score} Pts</span>
+                    </div>
+                    
+                    <!-- Diagram Venn Container -->
+                    <div id="final-venn-${player.id}" class="w-full h-[240px] bg-white/70 rounded-xl p-2 flex items-center justify-center border border-white shadow-inner"></div>
+                    
+                    <div class="w-full text-xs text-left space-y-1 bg-white/85 p-3 rounded-xl border border-white/50 font-bold text-slate-700">
+                        <p><strong>Domain:</strong> Seluruh anggota Set A</p>
+                        <p><strong>Kodomain:</strong> Seluruh anggota Set B</p>
+                        <p class="text-emerald-700 font-extrabold"><strong>Range Pemain:</strong> ${rangeStr}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+
+                const vennContainer = document.getElementById(`final-venn-${player.id}`);
+                renderVennSVG(player.matches, vennContainer, { playerDomain: player.startingDomain });
+            });
+        }
+
+
+        // --- LOGIKA MODAL CERTIFICATE ---
+
+        function openCertificateModal() {
+            certificateModal.classList.add('active');
+        }
+
+        function closeCertificateModal() {
+            certificateModal.classList.remove('active');
+        }
+
+
+        // --- MODAL UTILITAS DAN NAVIGASI ---
+
+        function confirmGoHome() {
+            confirmModal.classList.add('active');
+        }
+
+        function closeConfirmModal() {
+            confirmModal.classList.remove('active');
+        }
+
+        function forceGoHome() {
+            closeConfirmModal();
+            goHome();
+        }
+
+        function goHome() {
+            document.getElementById('welcome-page').style.display = 'none';
+            document.getElementById('home-page').style.display = 'flex'; // Halaman Kedua
+            document.getElementById('game-header').style.display = 'none';
+            document.getElementById('game-main').style.display = 'none';
+        }
+
+        function showModal(title, msg, type) {
+            modalTitle.innerText = title;
+            modalBody.innerText = msg;
+            
+            if(type === 'success') {
+                modalIcon.innerText = 'SELAMAT';
+                modalTitle.className = 'text-3xl font-black mb-2 brand-font text-emerald-600';
+                modalBtn.innerText = 'Lanjutkan';
+                modalBtn.onclick = closeModal;
+            } else {
+                modalIcon.innerText = 'INFO';
+                modalTitle.className = 'text-3xl font-black mb-2 brand-font text-rose-600';
+                modalBtn.innerText = 'Coba Lagi';
+                modalBtn.onclick = closeModal;
+            }
+            msgModal.classList.add('active');
+        }
+
+        function closeModal() {
+            msgModal.classList.remove('active');
+        }
+        
+        function closeLearningModal() {
+            learningModal.classList.remove('active');
+        }
+
+        function resetGame() {
+            currentPlayerIdx = 0; // Reset giliran kembali ke pemain pertama saat main lagi
+            initGame();
+        }
+
+    </script>
+</body>
+</html>
